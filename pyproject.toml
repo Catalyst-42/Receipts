@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "receipt"
+version = "1.0.0"
+description = "Receipt scanner that gets an recipe info by its' QR code"
+authors = ["Catalyst <catalyst42c@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.139.2"
+uvicorn = "^0.51.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.0"}
+alembic = "^1.13.0"
+pydantic = "^2.13.4"
+pydantic-settings = "^2.13.0"
+nechestniy-znak = "^1.0.3"
+greenlet = "^3.1.1"
+psycopg2-binary = "^2.9.12"
+asyncpg = "^0.30.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+black = "^24.0.0"
+flake8 = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+asyncio_mode = "auto"
