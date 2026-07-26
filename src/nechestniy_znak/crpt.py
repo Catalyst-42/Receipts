@@ -1,3 +1,10 @@
+"""
+Note: this file is a copy of original source just with some tweaks to add a proxy
+
+Original source: https://github.com/li0ard/nechestniy_znak
+Original author: https://github.com/li0ard
+"""
+
 import requests
 from typing import Union
 

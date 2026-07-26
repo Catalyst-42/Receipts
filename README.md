@@ -24,7 +24,7 @@ cp .env.example .env
 vim .env
 
 # Install dependencies
-poetry install python 3.14
+poetry python install 3.14
 poetry install
 
 # Init database and migrate it
@@ -43,3 +43,6 @@ Also to run camera on you phone via LAN on testing, you should install additiona
 ```sh
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 ```
+
+If you do so, just ensure then, that you open an `https` version of a site (`http` now will give an disconnection error). Browser will tel you once that this SSL sertfiticate is not trusted, but you may still use the app and launch a camera for testing.
+
