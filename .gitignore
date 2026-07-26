@@ -3,6 +3,6 @@
 *.pyc
 *.pem
 
-.vscode/*
-test/*
-ssl/*
+.vscode/
+test/
+ssl/

@@ -1,11 +1,12 @@
-from uuid import uuid7
 from typing import Optional
+from uuid import uuid7
 
-from nechestniy_znak import Crpt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config import settings
 from src.models import ReceiptOrm
+from src.nechestniy_znak.crpt import Crpt
 from src.schemes import ReceiptResponse
 
 
@@ -49,7 +50,7 @@ class ReceiptService:
 
         # Or call to API for it
         try:
-            crpt = Crpt()
+            crpt = Crpt(settings.proxy)
             receipt_data = crpt.infoFromReceipt(qr_code)
         except Exception as e:
             return ReceiptResponse(

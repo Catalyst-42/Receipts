@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str
 
+    # CRPT Proxy
+    proxy: str
+
     # Server
     host: str
     port: int
