@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid7
 from typing import Optional
 
 from nechestniy_znak import Crpt
@@ -22,8 +22,9 @@ class ReceiptService:
     async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptOrm:
         """Returns new receipt"""
         new_receipt = ReceiptOrm(
-            id=str(uuid.uuid7()), qr_code=qr_code, receipt_data=receipt_data
+            id=str(uuid7()), qr_code=qr_code, receipt_data=receipt_data
         )
+
         self.db.add(new_receipt)
         await self.db.commit()
         return new_receipt
@@ -36,7 +37,7 @@ class ReceiptService:
                 success=False, data=None, error="QR code cannot be empty", receipt_id=""
             )
 
-        # Return check if its already parsed
+        # Return receipt if its already parsed
         existing_receipt = await self.get_receipt_by_qr_code(qr_code)
         if existing_receipt:
             return ReceiptResponse(
@@ -54,13 +55,18 @@ class ReceiptService:
             return ReceiptResponse(
                 success=False,
                 data=None,
-                error=f"Ошибка внешнего API: {str(e)}",
+                error=f"API error: {str(e)}",
                 receipt_id="",
             )
 
         # Retister new receipt
-        new_receipt = await self.create_receipt(qr_code, receipt_data)
+        if receipt_data["codeFounded"] == True:
+            new_receipt = await self.create_receipt(qr_code, receipt_data)
+
+            return ReceiptResponse(
+                success=True, data=receipt_data, error=None, receipt_id=new_receipt.id
+            )
 
         return ReceiptResponse(
-            success=True, data=receipt_data, error=None, receipt_id=new_receipt.id
+            success=False, data=None, error="Receipt was not found", receipt_id=None
         )

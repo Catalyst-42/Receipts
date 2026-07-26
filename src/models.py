@@ -9,9 +9,10 @@ from src.config import settings
 
 Base = declarative_base()
 
-# Создание асинхронного движка и фабрики сессий
 engine = create_async_engine(settings.database_url)
-AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+AsyncSessionLocal = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 
 
 class ReceiptOrm(Base):

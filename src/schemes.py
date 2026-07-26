@@ -9,4 +9,4 @@ class ReceiptResponse(BaseModel):
     success: bool
     data: dict | None
     error: str | None
-    receipt_id: str
+    receipt_id: str | None
