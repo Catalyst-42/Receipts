@@ -19,8 +19,17 @@ Docs available on `/docs`, main page on `/` route. FastAPI tries to serve all st
 To prepare system to work, just create the `.env` file with system settings and run the poetry dependency installation.
 
 ```sh
+# Create enviroment
 cp .env.example .env
+vim .env
+
+# Install dependencies
+poetry install python 3.14
 poetry install
+
+# Init database and migrate it
+sudo -u postgres psql -c "CREATE DATABASE receipts;"
+poetry run alembic upgrade head
 ```
 
 To run the application itself, simply launch the main.py script.
