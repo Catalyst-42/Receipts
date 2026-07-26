@@ -12,13 +12,9 @@ Tech stack are:
 - Sqalchemy
 - Pydantic
 
-### Images
-
-
 ### API
-Docs available on `/docs`, main page on `/` route.
+Docs available on `/docs`, main page on `/` route. FastAPI tries to serve all static files from `static` dir, but it's recommended to use Nginx on deploy.
 
-### Launch
 To prepare system to work, just create the `.env` file with system settings and run the poetry dependency installation.
 
 ```sh
@@ -30,4 +26,10 @@ To run the application itself, simply launch the main.py script.
 
 ```sh
 poetry run python main.py
+```
+
+Also to run camera on you phone via LAN on testing, you should install additional SSL certificates to make this thing work. To do so just make this via openssl:
+
+```sh
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 ```
