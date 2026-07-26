@@ -12,6 +12,11 @@ Tech stack are:
 - Sqalchemy
 - Pydantic
 
+### Images
+
+| ![Root page](<img/Receipts - Root page.png>) | ![Parsed data](<img/Receipts - Parsed data.png>) | ![Docs](<img/Receipts - Docs.png>) |
+|-|-|-|
+
 ### API
 Docs available on `/docs`, main page on `/` route. FastAPI tries to serve all static files from `static` dir, but it's recommended to use Nginx on deploy.
 
@@ -45,4 +50,3 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 ```
 
 If you do so, just ensure then, that you open an `https` version of a site (`http` now will give an disconnection error). Browser will tel you once that this SSL sertfiticate is not trusted, but you may still use the app and launch a camera for testing.
-

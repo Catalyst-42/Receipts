@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "receipt"
+name = "receipts"
 version = "1.0.0"
-description = "Receipt scanner that gets an recipe info by its' QR code"
+description = "Receipt scanner that gets an receipt info by its' QR code"
 authors = ["Catalyst <catalyst42c@gmail.com>"]
 package-mode = false
 
