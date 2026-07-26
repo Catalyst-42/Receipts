@@ -1,6 +1,8 @@
 *.env
 *.DS_Store
 *.pyc
+*.pem
 
+.vscode/*
 test/*
 ssl/*

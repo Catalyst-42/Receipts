@@ -15,6 +15,7 @@ Tech stack are:
 ### API
 Docs available on `/docs`, main page on `/` route. FastAPI tries to serve all static files from `static` dir, but it's recommended to use Nginx on deploy.
 
+### Installation and launch
 To prepare system to work, just create the `.env` file with system settings and run the poetry dependency installation.
 
 ```sh
