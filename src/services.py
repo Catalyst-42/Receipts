@@ -5,24 +5,24 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.models import ReceiptOrm
+from src.models import ReceiptsOrm
 from src.nechestniy_znak.crpt import Crpt
-from src.schemes import ReceiptResponse
+from src.schemes import ScanQRResponse
 
 
 class ReceiptService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_receipt_by_qr_code(self, qr_code: str) -> Optional[ReceiptOrm]:
+    async def get_receipt_by_qr_code(self, qr_code: str) -> Optional[ReceiptsOrm]:
         """Returns recipie from QR code data"""
-        stmt = select(ReceiptOrm).where(ReceiptOrm.qr_code == qr_code)
+        stmt = select(ReceiptsOrm).where(ReceiptsOrm.qr_code == qr_code)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptOrm:
+    async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptsOrm:
         """Returns new receipt"""
-        new_receipt = ReceiptOrm(
+        new_receipt = ReceiptsOrm(
             id=str(uuid7()), qr_code=qr_code, receipt_data=receipt_data
         )
 
@@ -30,18 +30,18 @@ class ReceiptService:
         await self.db.commit()
         return new_receipt
 
-    async def process_qr_code(self, qr_code: str) -> ReceiptResponse:
+    async def process_qr_code(self, qr_code: str) -> ScanQRResponse:
         """Returns processed receipt from QR code"""
         qr_code = qr_code.strip()
         if not qr_code:
-            return ReceiptResponse(
+            return ScanQRResponse(
                 success=False, data=None, error="QR code cannot be empty", receipt_id=""
             )
 
         # Return receipt if its already parsed
         existing_receipt = await self.get_receipt_by_qr_code(qr_code)
         if existing_receipt:
-            return ReceiptResponse(
+            return ScanQRResponse(
                 success=True,
                 data=existing_receipt.receipt_data,
                 error=None,
@@ -53,7 +53,7 @@ class ReceiptService:
             crpt = Crpt(settings.proxy)
             receipt_data = crpt.infoFromReceipt(qr_code)
         except Exception as e:
-            return ReceiptResponse(
+            return ScanQRResponse(
                 success=False,
                 data=None,
                 error=f"API error: {str(e)}",
@@ -64,10 +64,10 @@ class ReceiptService:
         if receipt_data["codeFounded"] == True:
             new_receipt = await self.create_receipt(qr_code, receipt_data)
 
-            return ReceiptResponse(
+            return ScanQRResponse(
                 success=True, data=receipt_data, error=None, receipt_id=new_receipt.id
             )
 
-        return ReceiptResponse(
+        return ScanQRResponse(
             success=False, data=None, error="Receipt was not found", receipt_id=None
         )

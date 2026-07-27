@@ -15,15 +15,16 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-class ReceiptOrm(Base):
-    __tablename__ = "receipts"
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+class ReceiptsOrm(Base):
+    """Table of all receipts gathered from exteral API"""
+    __tablename__ = "receipts_orm"
 
     id = Column(String(36), primary_key=True, index=True, default=lambda: str(uuid7()))
     qr_code = Column(String, unique=True, index=True, nullable=False)
     receipt_data = Column(JSON, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        yield session
