@@ -3,11 +3,15 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import get_db
+from src.core.db import get_db
 from src.schemes import ScanQRRequest, ScanQRResponse, CountResponse
 from src.services import ReceiptService
 
 router = APIRouter()
+
+
+def get_receipt_service(db: AsyncSession = Depends(get_db)):
+    return ReceiptService(db)
 
 
 @router.get("/")
@@ -17,14 +21,17 @@ async def root():
 
 
 @router.post("/api/scan-qr", response_model=ScanQRResponse)
-async def scan_qr_code(request: ScanQRRequest, db: AsyncSession = Depends(get_db)):
+async def scan_qr_code(
+    request: ScanQRRequest,
+    receipt_service: ReceiptService = Depends(get_receipt_service),
+):
     """Returns full recepie info by it's QR code"""
-    service = ReceiptService(db)
-    return await service.process_qr_code(request.qr_code)
+    return await receipt_service.scan_qr_code(request.qr_code)
 
 
 @router.get("/api/count", response_model=CountResponse)
-async def count(db: AsyncSession = Depends(get_db)):
+async def count(
+    receipt_service: ReceiptService = Depends(get_receipt_service),
+) -> CountResponse:
     """Returns count of receipts in database"""
-    service = ReceiptService(db)
-    return await service.count()
+    return await receipt_service.get_receipt_count()
