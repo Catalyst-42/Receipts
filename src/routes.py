@@ -4,7 +4,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import get_db
-from src.schemes import ScanQRRequest, ScanQRResponse
+from src.schemes import ScanQRRequest, ScanQRResponse, CountResponse
 from src.services import ReceiptService
 
 router = APIRouter()
@@ -21,3 +21,10 @@ async def scan_qr_code(request: ScanQRRequest, db: AsyncSession = Depends(get_db
     """Returns full recepie info by it's QR code"""
     service = ReceiptService(db)
     return await service.process_qr_code(request.qr_code)
+
+
+@router.get("/api/count", response_model=CountResponse)
+async def count(db: AsyncSession = Depends(get_db)):
+    """Returns count of receipts in database"""
+    service = ReceiptService(db)
+    return await service.count()

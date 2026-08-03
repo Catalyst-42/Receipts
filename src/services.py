@@ -2,12 +2,13 @@ from typing import Optional
 from uuid import uuid7
 
 from sqlalchemy import select
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.models import ReceiptsOrm
 from src.nechestniy_znak.crpt import Crpt
-from src.schemes import ScanQRResponse
+from src.schemes import ScanQRResponse, CountResponse
 
 
 class ReceiptService:
@@ -19,6 +20,11 @@ class ReceiptService:
         stmt = select(ReceiptsOrm).where(ReceiptsOrm.qr_code == qr_code)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def count(self) -> int:
+        stmt = select(func.count()).select_from(ReceiptsOrm)
+        result = await self.db.execute(stmt)
+        return CountResponse(count=result.scalar())
 
     async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptsOrm:
         """Returns new receipt"""
