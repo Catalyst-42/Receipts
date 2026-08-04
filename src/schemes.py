@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import UUID7, BaseModel, Field
 
 
 class ScanQRRequest(BaseModel):
@@ -114,10 +114,11 @@ class ScanQRResponse(BaseModel):
         description="Receipt data",
     )
     error: str | None = Field(example=None, description="Response error state")
-    receipt_id: str | None = Field(
+    receipt_id: UUID7 | None = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
+
 
 class CountResponse(BaseModel):
     count: int = Field(example=42, description="Total count of receipts in database")

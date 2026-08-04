@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import uuid7
+from datetime import datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,10 +26,29 @@ class ReceiptsDao:
 
     async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptsOrm:
         """Creates new record in receipts table"""
+
+        # Extract fiscal fields
+        fiscal_data = receipt_data["fiscalData"]
+        code_data = fiscal_data["codeData"]
+        fiscal_date = code_data["fiscalDate"]
+
+        t = datetime.fromtimestamp(fiscal_date / 1000)
+        s = code_data["cost"] / 100
+        fn = code_data["fiscalDriveNumber"]
+        i = code_data["fiscalDocumentNumber"]
+        fp = code_data["fiscalSign"]
+        n = code_data["operationType"]
+
+        # Create receipt object with explicitly populated fiscal fields
         stmt = ReceiptsOrm(
-            id=str(uuid7()),
             qr_code=qr_code,
             receipt_data=receipt_data,
+            t=t,
+            s=s,
+            fn=fn,
+            i=i,
+            fp=fp,
+            n=n,
         )
 
         self.db.add(stmt)
