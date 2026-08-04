@@ -4,6 +4,7 @@ const reader = document.getElementById('reader');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const resultDiv = document.getElementById('result');
+const receiptCountDiv = document.getElementById('receiptCount');
 
 let scanner = null;
 
@@ -13,7 +14,17 @@ const LOADING_TEMPLATE = '<div class="text-secondary mt-2"><div class="progress"
 const ERROR_TEMPLATE = '<div class="text-danger mt-2">Error: {message}</div>';
 const VALIDATION_ERROR_TEMPLATE = '<div class="text-danger mt-2">Validation error: {message}</div>';
 
-// Helper function to create HTML with content
+async function updateReceiptCount() {
+  try {
+    const response = await fetch('/api/count');
+    const data = await response.json();
+    receiptCountDiv.textContent = data.count;
+  } catch (error) {
+    receiptCountDiv.textContent = '';
+    console.error('Error fetching receipt count:', error);
+  }
+}
+
 function createCard(content) {
   return CARD_TEMPLATE.replace('{content}', content);
 }
@@ -74,6 +85,11 @@ function onScanSuccess(decodedText) {
         const parsedDataHtml = createCard(fiscalHighlighted);
 
         resultDiv.innerHTML = qrHtml + parsedDataHtml + jsonHtml;
+
+        // Update receipt count if new receipt was created
+        if (data.success && data.receipt_id) {
+          updateReceiptCount();
+        }
       })
       .catch(err => {
         resultDiv.innerHTML = qrHtml + createError(err.message);
@@ -123,6 +139,8 @@ function stopScanner() {
   startBtn.style.display = 'inline-block';
   stopBtn.style.display = 'none';
 }
+
+updateReceiptCount();
 
 startBtn.addEventListener('click', startScanner);
 stopBtn.addEventListener('click', stopScanner);
