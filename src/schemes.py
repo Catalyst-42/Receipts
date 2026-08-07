@@ -1,4 +1,14 @@
 from pydantic import UUID7, BaseModel, Field
+from datetime import datetime
+from typing import Optional
+from decimal import Decimal
+
+
+class GetReceiptRequest(BaseModel):
+    receipt_id: UUID7 = Field(
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Unique id of scanned receipt",
+    )
 
 
 class ScanQRRequest(BaseModel):
@@ -7,8 +17,33 @@ class ScanQRRequest(BaseModel):
         description="QR code string from receipt",
     )
 
+    # t: str = Field(
+    #     example="20231203T2319",
+    #     description="Receipt timestamp",
+    # )
+    # s: Decimal = Field(
+    #     example=261.80,
+    #     description="Total amount",
+    # )
+    # fn: int = Field(
+    #     example=7281440701309134,
+    #     description="Fiscal drive number (ФН)",
+    # )
+    # i: int = Field(
+    #     example=10027,
+    #     description="Fiscal document number (номер чека)",
+    # )
+    # fp: int = Field(
+    #     example=3516337491,
+    #     description="Fiscal sign (ФП)",
+    # )
+    # n: int = Field(
+    #     example=1,
+    #     description="Operation type",
+    # )
 
-class ScanQRResponse(BaseModel):
+
+class ReceiptResponse(BaseModel):
     success: bool = Field(example=True, description="Status of a query")
     data: dict | None = Field(
         example={

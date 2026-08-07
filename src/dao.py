@@ -1,5 +1,5 @@
 from typing import Optional
-from uuid import uuid7
+from pydantic import UUID7
 from datetime import datetime
 
 from sqlalchemy import func, select
@@ -18,6 +18,12 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_receipt_by_id(self, receipt_id: UUID7) -> Optional[ReceiptsOrm]:
+        """Returns receipt by its UUID"""
+        stmt = select(ReceiptsOrm).where(ReceiptsOrm.id == receipt_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_receipt_count(self) -> int:
         """Returns total numer of rows of receipts table"""
         stmt = select(func.count()).select_from(ReceiptsOrm)
@@ -26,8 +32,6 @@ class ReceiptsDao:
 
     async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptsOrm:
         """Creates new record in receipts table"""
-
-        # Extract fiscal fields
         fiscal_data = receipt_data["fiscalData"]
         code_data = fiscal_data["codeData"]
         fiscal_date = code_data["fiscalDate"]
@@ -39,7 +43,6 @@ class ReceiptsDao:
         fp = code_data["fiscalSign"]
         n = code_data["operationType"]
 
-        # Create receipt object with explicitly populated fiscal fields
         stmt = ReceiptsOrm(
             qr_code=qr_code,
             receipt_data=receipt_data,

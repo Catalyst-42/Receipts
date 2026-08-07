@@ -1,10 +1,12 @@
-from fastapi import Depends
+from typing import Annotated
+
+from fastapi import Depends, Path, Query
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.schemes import ScanQRRequest, ScanQRResponse, CountResponse
+from src.schemes import CountResponse, GetReceiptRequest, ReceiptResponse, ScanQRRequest
 from src.services import ReceiptService
 
 router = APIRouter()
@@ -20,13 +22,23 @@ async def root():
     return FileResponse("static/index.html")
 
 
-@router.post("/api/scan-qr", response_model=ScanQRResponse)
+@router.post("/api/scan-qr", response_model=ReceiptResponse)
 async def scan_qr_code(
+    # request: Annotated[ScanQRRequest, Query()],
     request: ScanQRRequest,
     receipt_service: ReceiptService = Depends(get_receipt_service),
 ):
     """Returns full recepie info by it's QR code"""
     return await receipt_service.scan_qr_code(request.qr_code)
+
+
+@router.get("/api/receipt/{receipt_id}")
+async def get_receipt_by_id(
+    request: Annotated[GetReceiptRequest, Path()],
+    receipt_service: ReceiptService = Depends(get_receipt_service),
+) -> ReceiptResponse:
+    """Returns receipt by its UUID"""
+    return await receipt_service.get_receipt_by_id(request.receipt_id)
 
 
 @router.get("/api/count", response_model=CountResponse)
