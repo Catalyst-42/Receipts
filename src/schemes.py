@@ -1,46 +1,57 @@
-from pydantic import UUID7, BaseModel, Field
+from typing import Any
 from datetime import datetime
-from typing import Optional
-from decimal import Decimal
+from typing import Any
 
+from pydantic import UUID7, BaseModel, Field, field_validator
 
-class GetReceiptRequest(BaseModel):
+class GetReceiptByIdRequest(BaseModel):
     receipt_id: UUID7 = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
 
 
-class ScanQRRequest(BaseModel):
-    qr_code: str = Field(
-        example="t=20231203T2319&s=261.80&fn=7281440701309134&i=10027&fp=3516337491&n=1",
-        description="QR code string from receipt",
+class GetReceiptByFiscalDataRequest(BaseModel):
+    t: str = Field(
+        example="20231203T2319",
+        description="Receipt timestamp",
+    )
+    s: float = Field(
+        example=261.80,
+        description="Total amount",
+    )
+    fn: int = Field(
+        example=7281440701309134,
+        description="Fiscal drive number (ФН)",
+    )
+    i: int = Field(
+        example=10027,
+        description="Fiscal document number (ФД)",
+    )
+    fp: int = Field(
+        example=3516337491,
+        description="Fiscal sign (ФП)",
+    )
+    n: int = Field(
+        example=1,
+        description="Operation type",
     )
 
-    # t: str = Field(
-    #     example="20231203T2319",
-    #     description="Receipt timestamp",
-    # )
-    # s: Decimal = Field(
-    #     example=261.80,
-    #     description="Total amount",
-    # )
-    # fn: int = Field(
-    #     example=7281440701309134,
-    #     description="Fiscal drive number (ФН)",
-    # )
-    # i: int = Field(
-    #     example=10027,
-    #     description="Fiscal document number (номер чека)",
-    # )
-    # fp: int = Field(
-    #     example=3516337491,
-    #     description="Fiscal sign (ФП)",
-    # )
-    # n: int = Field(
-    #     example=1,
-    #     description="Operation type",
-    # )
+    @field_validator("t", mode="before")
+    @classmethod
+    def validate_fiscal_time(cls, value: Any) -> Any:
+        try:
+            value = value.strip()
+            datetime.strptime(value, "%Y%m%dT%H%M")
+        except ValueError:
+            raise ValueError("Fiscal time must be in format %Y%m%dT%H%M")
+
+        return value
+
+    @property
+    def t_datetime(self) -> datetime:
+        """Returns fiscal time as datetime object"""
+        return datetime.strptime(self.t, "%Y%m%dT%H%M")
 
 
 class ReceiptResponse(BaseModel):

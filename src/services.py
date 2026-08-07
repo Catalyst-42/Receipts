@@ -1,10 +1,10 @@
+from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.core.crpt import Crpt
 from src.dao import ReceiptsDao
-from src.schemes import CountResponse, ReceiptResponse
-from pydantic import UUID7
+from src.schemes import CountResponse, GetReceiptByFiscalDataRequest, ReceiptResponse
 
 
 class ReceiptService:
@@ -12,7 +12,7 @@ class ReceiptService:
         self.receipts_dao = ReceiptsDao(db)
 
     async def get_receipt_count(self) -> CountResponse:
-        """Returns total numer of rows of receipts table"""
+        """Returns total number of rows in receipts table"""
         count = await self.receipts_dao.get_receipt_count()
         return CountResponse(count=count)
 
@@ -28,20 +28,19 @@ class ReceiptService:
             success=True, data=receipt.receipt_data, error=None, receipt_id=receipt.id
         )
 
-    async def scan_qr_code(self, qr_code: str) -> ReceiptResponse:
-        """
-        Returns processed receipt from QR code
+    async def get_receipt_by_fiscal_data(
+        self, fiscal_data: GetReceiptByFiscalDataRequest
+    ) -> ReceiptResponse:
+        """Tries to find receipt locally or in CRPT"""
+        existing_receipt = await self.receipts_dao.get_receipt_by_fiscal_data(
+            t=fiscal_data.t_datetime,
+            s=fiscal_data.s,
+            fn=fiscal_data.fn,
+            i=fiscal_data.i,
+            fp=fiscal_data.fp,
+            n=fiscal_data.n,
+        )
 
-        Tries to find a qr code data in local base, or in foreign API, otherwise returns an exception
-        """
-        qr_code = qr_code.strip()
-        if not qr_code:
-            return ReceiptResponse(
-                success=False, data=None, error="QR code cannot be empty", receipt_id=""
-            )
-
-        # Return receipt if its already parsed
-        existing_receipt = await self.receipts_dao.get_receipt_by_qr_code(qr_code)
         if existing_receipt:
             return ReceiptResponse(
                 success=True,
@@ -50,7 +49,18 @@ class ReceiptService:
                 receipt_id=existing_receipt.id,
             )
 
-        # Or call to API for it
+        # Try to ask CRPT
+        qr_parts = [
+            f"t={fiscal_data.t}",
+            f"s={fiscal_data.s:.2f}",
+            f"fn={fiscal_data.fn}",
+            f"i={fiscal_data.i}",
+            f"fp={fiscal_data.fp}",
+            f"n={fiscal_data.n}",
+        ]
+        qr_code = "&".join(qr_parts)
+
+        # Call external API with formed QR code
         try:
             crpt = Crpt(settings.proxy)
             receipt_data = crpt.infoFromReceipt(qr_code)
@@ -62,14 +72,18 @@ class ReceiptService:
                 receipt_id="",
             )
 
-        # Retister new receipt
-        if receipt_data["codeFounded"] == True:
-            new_receipt = await self.receipts_dao.create_receipt(qr_code, receipt_data)
-
+        if receipt_data.get("codeFounded"):
+            receipt = await self.receipts_dao.create_receipt(receipt_data)
             return ReceiptResponse(
-                success=True, data=receipt_data, error=None, receipt_id=new_receipt.id
+                success=True,
+                data=receipt_data,
+                error=None,
+                receipt_id=receipt.id,
             )
 
         return ReceiptResponse(
-            success=False, data=None, error="Receipt was not found", receipt_id=None
+            success=False,
+            data=None,
+            error="Receipt was not found by fiscal data",
+            receipt_id=None,
         )

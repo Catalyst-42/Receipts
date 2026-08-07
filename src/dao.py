@@ -1,7 +1,7 @@
-from typing import Optional
-from pydantic import UUID7
 from datetime import datetime
+from typing import Optional
 
+from pydantic import UUID7
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,25 +12,37 @@ class ReceiptsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_receipt_by_qr_code(self, qr_code: str) -> Optional[ReceiptsOrm]:
-        """Tries to find receipe in receipts table"""
-        stmt = select(ReceiptsOrm).where(ReceiptsOrm.qr_code == qr_code)
-        result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+    async def get_receipt_by_fiscal_data(
+        self, t: datetime, s: float, fn: int, i: int, fp: int, n: int
+    ) -> ReceiptsOrm | None:
+        """Tries to find receipt by its fiscal data"""
+        stmt = select(ReceiptsOrm).where(
+            ReceiptsOrm.t == t,
+            ReceiptsOrm.s == s,
+            ReceiptsOrm.fn == fn,
+            ReceiptsOrm.i == i,
+            ReceiptsOrm.fp == fp,
+            ReceiptsOrm.n == n,
+        )
 
-    async def get_receipt_by_id(self, receipt_id: UUID7) -> Optional[ReceiptsOrm]:
-        """Returns receipt by its UUID"""
+        result = await self.db.execute(stmt)
+        receipt = result.scalar_one_or_none()
+
+        return receipt
+
+    async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptsOrm | None:
+        """Tries to find receipt by its UUID"""
         stmt = select(ReceiptsOrm).where(ReceiptsOrm.id == receipt_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_receipt_count(self) -> int:
-        """Returns total numer of rows of receipts table"""
+        """Returns total number of rows in receipts table"""
         stmt = select(func.count()).select_from(ReceiptsOrm)
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def create_receipt(self, qr_code: str, receipt_data: dict) -> ReceiptsOrm:
+    async def create_receipt(self, receipt_data: dict) -> ReceiptsOrm:
         """Creates new record in receipts table"""
         fiscal_data = receipt_data["fiscalData"]
         code_data = fiscal_data["codeData"]
@@ -44,14 +56,13 @@ class ReceiptsDao:
         n = code_data["operationType"]
 
         stmt = ReceiptsOrm(
-            qr_code=qr_code,
-            receipt_data=receipt_data,
             t=t,
             s=s,
             fn=fn,
             i=i,
             fp=fp,
             n=n,
+            receipt_data=receipt_data,
         )
 
         self.db.add(stmt)
