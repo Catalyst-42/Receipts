@@ -12,6 +12,22 @@ class GetReceiptByIdRequest(BaseModel):
     )
 
 
+class ReceiptsCountResponse(BaseModel):
+    count: int = Field(
+        example=42,
+        description="Total count of receipts in database",
+    )
+
+
+class TotalSumResponse(BaseModel):
+    total_sum: Decimal = Field(
+        example="102195.37",
+        description="Total sum of all receipts in database",
+        max_digits=15,
+        decimal_places=2,
+    )
+
+
 class GetReceiptByFiscalDataRequest(BaseModel):
     t: str = Field(
         example="20231203T2319",
@@ -44,6 +60,7 @@ class GetReceiptByFiscalDataRequest(BaseModel):
     @field_validator("t", mode="before")
     @classmethod
     def validate_fiscal_time(cls, value: Any) -> Any:
+        """Validates fiscal time date and time format"""
         try:
             value = value.strip()
             datetime.strptime(value, "%Y%m%dT%H%M")
@@ -60,7 +77,10 @@ class GetReceiptByFiscalDataRequest(BaseModel):
 
 
 class ReceiptResponse(BaseModel):
-    success: bool = Field(example=True, description="Status of a query")
+    success: bool = Field(
+        example=True,
+        description="Status of a query",
+    )
     data: dict | None = Field(
         example={
             "id": 763297079,
@@ -164,12 +184,11 @@ class ReceiptResponse(BaseModel):
         },
         description="Receipt data",
     )
-    error: str | None = Field(example=None, description="Response error state")
+    error: str | None = Field(
+        example=None,
+        description="Response error state",
+    )
     receipt_id: UUID7 | None = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
-
-
-class CountResponse(BaseModel):
-    count: int = Field(example=42, description="Total count of receipts in database")

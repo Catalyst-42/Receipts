@@ -7,10 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.schemes import (
-    CountResponse,
+    ReceiptsCountResponse,
     GetReceiptByIdRequest,
     ReceiptResponse,
     GetReceiptByFiscalDataRequest,
+    TotalSumResponse,
 )
 from src.services import ReceiptService
 
@@ -21,18 +22,26 @@ def get_receipt_service(db: AsyncSession = Depends(get_db)):
     return ReceiptService(db)
 
 
-@router.get("/")
+@router.get("/", include_in_schema=False)
 async def root() -> FileResponse:
     """Returns a frontend page with receipt scanner"""
     return FileResponse("static/index.html")
 
 
-@router.get("/api/receipts/count", response_model=CountResponse)
+@router.get("/api/receipts/count", response_model=ReceiptsCountResponse)
 async def get_receipt_count(
     receipt_service: ReceiptService = Depends(get_receipt_service),
-) -> CountResponse:
+) -> ReceiptsCountResponse:
     """Returns count of receipts in database"""
     return await receipt_service.get_receipt_count()
+
+
+@router.get("/api/receipts/total-sum", response_model=TotalSumResponse)
+async def get_receipt_total_sum(
+    receipt_service: ReceiptService = Depends(get_receipt_service),
+) -> TotalSumResponse:
+    """Returns total sum of all collected receipts"""
+    return await receipt_service.get_receipt_total_sum()
 
 
 @router.get("/api/receipts/by-fiscal-data", response_model=ReceiptResponse)

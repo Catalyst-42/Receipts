@@ -34,6 +34,12 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_receipt_total_sum(self) -> Decimal:
+        """Counts sum of all cost `s` fields in receipts table"""
+        stmt = select(func.sum(ReceiptsOrm.s))
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
     async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptsOrm | None:
         """Tries to find receipt by its UUID"""
         stmt = select(ReceiptsOrm).where(ReceiptsOrm.id == receipt_id)

@@ -5,17 +5,22 @@ from decimal import Decimal
 from src.config import settings
 from src.core.crpt import Crpt
 from src.dao import ReceiptsDao
-from src.schemes import CountResponse, GetReceiptByFiscalDataRequest, ReceiptResponse
+from src.schemes import ReceiptsCountResponse, GetReceiptByFiscalDataRequest, ReceiptResponse,  TotalSumResponse
 
 
 class ReceiptService:
     def __init__(self, db: AsyncSession):
         self.receipts_dao = ReceiptsDao(db)
 
-    async def get_receipt_count(self) -> CountResponse:
+    async def get_receipt_count(self) -> ReceiptsCountResponse:
         """Returns total number of rows in receipts table"""
         count = await self.receipts_dao.get_receipt_count()
-        return CountResponse(count=count)
+        return ReceiptsCountResponse(count=count)
+
+    async def get_receipt_total_sum(self) -> TotalSumResponse:
+        """Returns total sum of all collected receipts"""
+        total_sum = await self.receipts_dao.get_receipt_total_sum()
+        return TotalSumResponse(total_sum=total_sum)
 
     async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptResponse:
         """Returns receipt response by its UUID"""
