@@ -16,7 +16,7 @@ from src.core.db import Base
 class ReceiptsOrm(Base):
     """Table of all receipts gathered from external API"""
 
-    __table_args__ = (UniqueConstraint("fn", "i", "fp"),)
+    __table_args__ = (UniqueConstraint("t", "s", "fn", "i", "fp", "n"),)
 
     id = Column(
         UUID(as_uuid=True),

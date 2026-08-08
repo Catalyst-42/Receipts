@@ -50,3 +50,7 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 ```
 
 If you do so, just ensure then, that you open an `https` version of a site (`http` now will give an disconnection error). Browser will tel you once that this SSL sertfiticate is not trusted, but you may still use the app and launch a camera for testing.
+
+```
+open https://localhost:8800/
+```
