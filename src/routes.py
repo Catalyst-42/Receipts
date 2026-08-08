@@ -28,7 +28,7 @@ async def root() -> FileResponse:
 
 
 @router.get("/api/receipts/count", response_model=CountResponse)
-async def count(
+async def get_receipt_count(
     receipt_service: ReceiptService = Depends(get_receipt_service),
 ) -> CountResponse:
     """Returns count of receipts in database"""

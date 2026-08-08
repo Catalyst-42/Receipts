@@ -1,8 +1,9 @@
-from typing import Any
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 
-from pydantic import UUID7, BaseModel, Field, field_validator
+from pydantic import UUID7, BaseModel, Field, computed_field, field_validator
+
 
 class GetReceiptByIdRequest(BaseModel):
     receipt_id: UUID7 = Field(
@@ -15,10 +16,13 @@ class GetReceiptByFiscalDataRequest(BaseModel):
     t: str = Field(
         example="20231203T2319",
         description="Receipt timestamp",
+        validate_default=True,
     )
-    s: float = Field(
-        example=261.80,
+    s: Decimal = Field(
+        example="261.80",
         description="Total amount",
+        max_digits=15,
+        decimal_places=2,
     )
     fn: int = Field(
         example=7281440701309134,
@@ -48,6 +52,7 @@ class GetReceiptByFiscalDataRequest(BaseModel):
 
         return value
 
+    @computed_field
     @property
     def t_datetime(self) -> datetime:
         """Returns fiscal time as datetime object"""

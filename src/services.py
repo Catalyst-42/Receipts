@@ -1,5 +1,6 @@
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
+from decimal import Decimal
 
 from src.config import settings
 from src.core.crpt import Crpt
@@ -25,7 +26,7 @@ class ReceiptService:
             )
 
         return ReceiptResponse(
-            success=True, data=receipt.receipt_data, error=None, receipt_id=receipt.id
+            success=True, data=receipt.crpt_data, error=None, receipt_id=receipt.id
         )
 
     async def get_receipt_by_fiscal_data(
@@ -44,7 +45,7 @@ class ReceiptService:
         if existing_receipt:
             return ReceiptResponse(
                 success=True,
-                data=existing_receipt.receipt_data,
+                data=existing_receipt.crpt_data,
                 error=None,
                 receipt_id=existing_receipt.id,
             )
@@ -63,7 +64,7 @@ class ReceiptService:
         # Call external API with formed QR code
         try:
             crpt = Crpt(settings.proxy)
-            receipt_data = crpt.infoFromReceipt(qr_code)
+            crpt_data = crpt.infoFromReceipt(qr_code)
         except Exception as e:
             return ReceiptResponse(
                 success=False,
@@ -72,11 +73,11 @@ class ReceiptService:
                 receipt_id="",
             )
 
-        if receipt_data.get("codeFounded"):
-            receipt = await self.receipts_dao.create_receipt(receipt_data)
+        if crpt_data.get("codeFounded"):
+            receipt = await self.receipts_dao.create_receipt(crpt_data)
             return ReceiptResponse(
                 success=True,
-                data=receipt_data,
+                data=crpt_data,
                 error=None,
                 receipt_id=receipt.id,
             )

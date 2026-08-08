@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import UUID7
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import ReceiptsOrm
+from decimal import Decimal
 
 
 class ReceiptsDao:
@@ -13,7 +13,13 @@ class ReceiptsDao:
         self.db = db
 
     async def get_receipt_by_fiscal_data(
-        self, t: datetime, s: float, fn: int, i: int, fp: int, n: int
+        self,
+        t: datetime,
+        s: Decimal,
+        fn: int,
+        i: int,
+        fp: int,
+        n: int,
     ) -> ReceiptsOrm | None:
         """Tries to find receipt by its fiscal data"""
         stmt = select(ReceiptsOrm).where(
@@ -26,9 +32,7 @@ class ReceiptsDao:
         )
 
         result = await self.db.execute(stmt)
-        receipt = result.scalar_one_or_none()
-
-        return receipt
+        return result.scalar_one_or_none()
 
     async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptsOrm | None:
         """Tries to find receipt by its UUID"""
@@ -42,9 +46,9 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def create_receipt(self, receipt_data: dict) -> ReceiptsOrm:
-        """Creates new record in receipts table"""
-        fiscal_data = receipt_data["fiscalData"]
+    async def create_receipt(self, crpt_data: dict) -> ReceiptsOrm:
+        """Creates new record in receipts table from CRPT receipt data"""
+        fiscal_data = crpt_data["fiscalData"]
         code_data = fiscal_data["codeData"]
         fiscal_date = code_data["fiscalDate"]
 
@@ -55,16 +59,16 @@ class ReceiptsDao:
         fp = code_data["fiscalSign"]
         n = code_data["operationType"]
 
-        stmt = ReceiptsOrm(
+        result = ReceiptsOrm(
             t=t,
             s=s,
             fn=fn,
             i=i,
             fp=fp,
             n=n,
-            receipt_data=receipt_data,
+            crpt_data=crpt_data,
         )
 
-        self.db.add(stmt)
+        self.db.add(result)
         await self.db.commit()
-        return stmt
+        return result
