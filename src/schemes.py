@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -60,11 +60,11 @@ class GetReceiptByFiscalDataRequest(BaseModel):
     @classmethod
     def _parse_fiscal_time(cls, value: Any) -> datetime:
         """Tries to parse fiscal time by two formats"""
-        time_formats = ("%Y%m%dT%H%M%S", "%Y%m%dT%H%M")
+        time_formats = ("%Y%m%dT%H%M", "%Y%m%dT%H%M%S")
 
         for time_format in time_formats:
             try:
-                return datetime.strptime(value, time_format)
+                return datetime.strptime(value, time_format).replace(tzinfo=None)
             except ValueError:
                 continue
 

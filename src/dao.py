@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import UUID7
 from sqlalchemy import func, select
@@ -58,7 +58,7 @@ class ReceiptsDao:
         code_data = fiscal_data["codeData"]
         fiscal_date = code_data["fiscalDate"]
 
-        t = datetime.fromtimestamp(fiscal_date / 1000)
+        t = datetime.fromtimestamp(fiscal_date / 1000, tz=timezone.utc).replace(tzinfo=None)
         s = code_data["cost"] / 100
         fn = code_data["fiscalDriveNumber"]
         i = code_data["fiscalDocumentNumber"]
