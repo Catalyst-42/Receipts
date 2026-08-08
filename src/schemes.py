@@ -57,23 +57,31 @@ class GetReceiptByFiscalDataRequest(BaseModel):
         description="Operation type",
     )
 
+    @classmethod
+    def _parse_fiscal_time(cls, value: Any) -> datetime:
+        """Tries to parse fiscal time by two formats"""
+        time_formats = ("%Y%m%dT%H%M%S", "%Y%m%dT%H%M")
+
+        for time_format in time_formats:
+            try:
+                return datetime.strptime(value, time_format)
+            except ValueError:
+                continue
+
+        raise ValueError(f"Time must match format {' or '.join(time_formats)}")
+
     @field_validator("t", mode="before")
     @classmethod
     def validate_fiscal_time(cls, value: Any) -> Any:
         """Validates fiscal time date and time format"""
-        try:
-            value = value.strip()
-            datetime.strptime(value, "%Y%m%dT%H%M")
-        except ValueError:
-            raise ValueError("Fiscal time must be in format %Y%m%dT%H%M")
-
+        cls._parse_fiscal_time(value)
         return value
 
     @computed_field
     @property
     def t_datetime(self) -> datetime:
         """Returns fiscal time as datetime object"""
-        return datetime.strptime(self.t, "%Y%m%dT%H%M")
+        return self._parse_fiscal_time(self.t)
 
 
 class ReceiptResponse(BaseModel):
