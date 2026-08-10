@@ -15,8 +15,11 @@ pydantic = "^2.13.4"
 pydantic-settings = "^2.13.0"
 nechestniy-znak = "^1.0.3"
 greenlet = "^3.1.1"
-psycopg2-binary = "^2.9.12"
+psycopg2-binary = "^2.9.0"
 asyncpg = "^0.30.0"
+opencv-python = "^4.10.0"
+pyzbar = "^0.1.9"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
@@ -31,6 +34,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 88
 target-version = ['py310']
+
+[tool.poetry.scripts]
+qr-scan = "scan_from_qr:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
