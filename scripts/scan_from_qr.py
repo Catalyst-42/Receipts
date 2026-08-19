@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import asyncio
 import warnings
 from pathlib import Path
@@ -55,7 +53,7 @@ async def process_qr_images_directory(directory: str, api_base_url: str) -> None
         ):
             successful += 1
 
-    print(f"\r{successful}/{len(image_files)}")
+    print(f"\rDone with {successful} succesful of {len(image_files)}")
 
 
 if __name__ == "__main__":
