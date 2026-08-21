@@ -4,9 +4,9 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
-from src.routes import router
+from src.receipts.routes import router
 
-app = FastAPI(title=settings.app_name, version="1.0.0")
+app = FastAPI(title=settings.app_name, version="1.0.0", swagger_ui_parameters={"theme": "dark"})
 
 # CORS
 app.add_middleware(

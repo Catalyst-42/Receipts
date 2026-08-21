@@ -1,19 +1,21 @@
 from typing import Annotated
 
 from fastapi import Depends, Path, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.schemes import (
-    ReceiptsCountResponse,
+from src.receipts.schemes import (
+    ReceiptsCount,
     GetReceiptByIdRequest,
-    ReceiptResponse,
+    ReceiptListResponse,
+    ReceiptData,
     GetReceiptByFiscalDataRequest,
-    TotalSumResponse,
+    TotalSum,
+    ErrorResponse,
 )
-from src.services import ReceiptService
+from src.receipts.services import ReceiptService
 
 router = APIRouter(tags=["API"])
 
@@ -28,35 +30,56 @@ async def root() -> FileResponse:
     return FileResponse("static/index.html")
 
 
-@router.get("/api/receipts/count", response_model=ReceiptsCountResponse)
+@router.get("/api/receipts/stats/count", response_model=ReceiptsCount)
 async def get_receipt_count(
     receipt_service: ReceiptService = Depends(get_receipt_service),
-) -> ReceiptsCountResponse:
+) -> ReceiptsCount:
     """Returns count of receipts in database"""
     return await receipt_service.get_receipt_count()
 
 
-@router.get("/api/receipts/total-sum", response_model=TotalSumResponse)
+@router.get("/api/receipts/stats/total-sum", response_model=TotalSum)
 async def get_receipt_total_sum(
     receipt_service: ReceiptService = Depends(get_receipt_service),
-) -> TotalSumResponse:
+) -> TotalSum:
     """Returns total sum of all collected receipts"""
     return await receipt_service.get_receipt_total_sum()
 
 
-@router.get("/api/receipts/by-fiscal-data", response_model=ReceiptResponse)
+@router.get("/api/receipts/export")
+async def get_receipts_export(
+    receipt_service: ReceiptService = Depends(get_receipt_service),
+) -> ReceiptListResponse:
+    """Returns full JSON dump of receipts table"""
+    return await receipt_service.get_json_dump()
+
+
+@router.get(
+    "/api/receipts/by-fiscal-data",
+    response_model=ReceiptData,
+    responses={
+        404: {"model": ErrorResponse, "description": "Receipt not found"},
+        503: {"model": ErrorResponse, "description": "CRPT API not available"},
+    },
+)
 async def get_receipt_by_fiscal_data(
     request: Annotated[GetReceiptByFiscalDataRequest, Query()],
     receipt_service: ReceiptService = Depends(get_receipt_service),
-) -> ReceiptResponse:
+) -> ReceiptData:
     """Returns full recepie info by fiscal data"""
     return await receipt_service.get_receipt_by_fiscal_data(request)
 
 
-@router.get("/api/receipts/{receipt_id}")
+@router.get(
+    "/api/receipts/{receipt_id}",
+    response_model=ReceiptData,
+    responses={
+        404: {"model": ErrorResponse, "description": "Receipt not found"},
+    },
+)
 async def get_receipt_by_id(
     request: Annotated[GetReceiptByIdRequest, Path()],
     receipt_service: ReceiptService = Depends(get_receipt_service),
-) -> ReceiptResponse:
+) -> StreamingResponse:
     """Returns receipt by its UUID"""
     return await receipt_service.get_receipt_by_id(request.receipt_id)

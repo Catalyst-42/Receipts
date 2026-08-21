@@ -12,14 +12,14 @@ class GetReceiptByIdRequest(BaseModel):
     )
 
 
-class ReceiptsCountResponse(BaseModel):
+class ReceiptsCount(BaseModel):
     count: int = Field(
         example=42,
         description="Total count of receipts in database",
     )
 
 
-class TotalSumResponse(BaseModel):
+class TotalSum(BaseModel):
     total_sum: Decimal = Field(
         example="102195.37",
         description="Total sum of all receipts in database",
@@ -84,12 +84,12 @@ class GetReceiptByFiscalDataRequest(BaseModel):
         return self._parse_fiscal_time(self.t)
 
 
-class ReceiptResponse(BaseModel):
-    success: bool = Field(
-        example=True,
-        description="Status of a query",
+class ReceiptData(BaseModel):
+    receipt_id: UUID7 = Field(
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Unique id of scanned receipt",
     )
-    data: dict | None = Field(
+    data: dict = Field(
         example={
             "id": 763297079,
             "codeFounded": True,
@@ -192,11 +192,11 @@ class ReceiptResponse(BaseModel):
         },
         description="Receipt data",
     )
-    error: str | None = Field(
-        example=None,
-        description="Response error state",
-    )
-    receipt_id: UUID7 | None = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
-        description="Unique id of scanned receipt",
-    )
+
+
+class ReceiptListResponse(BaseModel):
+    receipts: list[ReceiptData]
+
+
+class ErrorResponse(BaseModel):
+    detail: str

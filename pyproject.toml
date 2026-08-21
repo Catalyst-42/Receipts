@@ -4,6 +4,9 @@ version = "1.0.0"
 description = "Receipt scanner that gets an receipt info by its' QR code"
 authors = ["Catalyst <catalyst42c@gmail.com>"]
 package-mode = false
+packages = [
+    { include = "src", from = "." },
+]
 
 [tool.poetry.dependencies]
 python = "^3.14"

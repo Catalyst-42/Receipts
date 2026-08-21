@@ -2,15 +2,23 @@ from datetime import datetime, timezone
 
 from pydantic import UUID7
 from sqlalchemy import func, select
+from typing import Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import ReceiptsOrm
+from src.receipts.models import ReceiptsOrm
 from decimal import Decimal
 
 
 class ReceiptsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_receipts_all(self) -> Sequence[ReceiptsOrm]:
+        """Returns all receipts table"""
+        stmt = select(ReceiptsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
     async def get_receipt_by_fiscal_data(
         self,
@@ -59,7 +67,7 @@ class ReceiptsDao:
         fiscal_date = code_data["fiscalDate"]
 
         t = datetime.fromtimestamp(fiscal_date / 1000, tz=timezone.utc).replace(tzinfo=None)
-        s = code_data["cost"] / 100
+        s = Decimal(code_data["cost"]) / 100
         fn = code_data["fiscalDriveNumber"]
         i = code_data["fiscalDocumentNumber"]
         fp = code_data["fiscalSign"]

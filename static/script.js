@@ -96,7 +96,7 @@ function stopScanner() {
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('/api/receipts/count');
+    const response = await fetch('/api/receipts/stats/count');
     const data = await response.json();
     receiptCountDiv.textContent = data.count;
   } catch (error) {
