@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid7
 
 from sqlalchemy import (
@@ -11,9 +12,13 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
+
+if TYPE_CHECKING:
+    from src.crpt.models import CrptOrm
+    from src.items.models import ItemsOrm
 
 
 class ReceiptsOrm(Base):
@@ -32,18 +37,13 @@ class ReceiptsOrm(Base):
     crpt_id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
         ForeignKey("crpt_orm.id", ondelete="CASCADE"),
+        index=True,
+        unique=True,
         nullable=False,
         comment="Reference to original CRPT data",
     )
 
-    # Foreign key to CRPT model
-    crpt_id: Mapped[UUID | None] = mapped_column(
-        SQL_UUID(as_uuid=True),
-        ForeignKey("crpt_orm.id", ondelete="CASCADE"),
-        nullable=True,
-        comment="Reference to the original CRPT record",
-    )
-
+    # Fiscal fields
     t: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
@@ -52,7 +52,7 @@ class ReceiptsOrm(Base):
     s: Mapped[Decimal] = mapped_column(
         Numeric(precision=15, scale=2),
         nullable=False,
-        comment="Total amount",
+        comment="Sum of prices by items in receipt",
     )
     fn: Mapped[int] = mapped_column(
         BigInteger,
@@ -74,3 +74,16 @@ class ReceiptsOrm(Base):
         nullable=False,
         comment="Operation type",
     )
+
+    # Relations
+    crpt: Mapped["CrptOrm"] = relationship(
+        "CrptOrm",
+        back_populates="receipt",
+        lazy="selectin",
+    )
+    # items: Mapped[list["ItemsOrm"]] = relationship(
+    #     "ItemsOrm",
+    #     back_populates="receipt",
+    #     cascade="all, delete-orphan",
+    #     lazy="selectin",
+    # )

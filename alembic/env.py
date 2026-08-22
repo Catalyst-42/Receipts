@@ -8,8 +8,23 @@ from alembic import context
 from src.config import settings
 from src.core.db import Base
 
+# CRPT
 import src.crpt.models  # noqa: F401
+
+# Receipts
 import src.receipts.models  # noqa: F401
+# import src.items.models  # noqa: F401
+
+# Retailers
+# import src.retailers.models  # noqa: F401
+# import src.shops.models  # noqa: F401
+# import src.employees.models  # noqa: F401
+
+# Directories
+# import src.nds.models  # noqa: F401
+# import src.payments.models  # noqa: F401
+# import src.measures.models  # noqa: F401
+# import src.products.models  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", str(settings.database_url))

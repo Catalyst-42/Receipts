@@ -1,24 +1,37 @@
-from uuid import uuid7
+from typing import TYPE_CHECKING, Any
+from uuid import UUID, uuid7
 
-from sqlalchemy import Column
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
+
+if TYPE_CHECKING:
+    from src.receipts.models import ReceiptsOrm
 
 
 class CrptOrm(Base):
     """Table of all CRPT dumps from external API"""
 
-    id = Column(
-        UUID(as_uuid=True),
+    id: Mapped[UUID] = mapped_column(
+        SQL_UUID(as_uuid=True),
         primary_key=True,
         index=True,
-        default=lambda: uuid7(),
         unique=True,
+        default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
     )
-    dump = Column(
+    dump: Mapped[dict[str, Any]] = mapped_column(
         JSONB,
         nullable=False,
-        comment="Full receipt data in JSON format from CRPT API",
+        comment="Full receipt dump in JSON format from CRPT API",
+    )
+
+    # Relations
+    receipt: Mapped["ReceiptsOrm"] = relationship(
+        "ReceiptsOrm",
+        back_populates="crpt",
+        uselist=False,
+        lazy="selectin",
     )
