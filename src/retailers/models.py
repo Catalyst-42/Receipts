@@ -38,8 +38,8 @@ class RetailersOrm(Base):
     )
 
     # Relations
-    # shops: Mapped[list["ShopsOrm"]] = relationship(
-    #     "ShopsOrm",
-    #     back_populates="retailer",
-    #     lazy="selectin",
-    # )
+    shops: Mapped[list["ShopsOrm"]] = relationship(
+        "ShopsOrm",
+        back_populates="retailer",
+        lazy="selectin",
+    )

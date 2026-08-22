@@ -81,9 +81,9 @@ class ReceiptsOrm(Base):
         back_populates="receipt",
         lazy="selectin",
     )
-    # items: Mapped[list["ItemsOrm"]] = relationship(
-    #     "ItemsOrm",
-    #     back_populates="receipt",
-    #     cascade="all, delete-orphan",
-    #     lazy="selectin",
-    # )
+    items: Mapped[list["ItemsOrm"]] = relationship(
+        "ItemsOrm",
+        back_populates="receipt",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
