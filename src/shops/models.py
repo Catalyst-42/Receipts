@@ -35,7 +35,7 @@ class ShopsOrm(Base):
     )
     retailer_id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
-        ForeignKey("retailers.id", ondelete="RESTRICT"),
+        ForeignKey("retailers_orm.id", ondelete="RESTRICT"),
         index=True,
         unique=True,
         comment="Link on retailer - owner of this shop",

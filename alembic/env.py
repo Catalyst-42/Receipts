@@ -18,7 +18,7 @@ import src.receipts.models  # noqa: F401
 # Retailers
 import src.retailers.models  # noqa: F401
 import src.shops.models  # noqa: F401
-# import src.employees.models  # noqa: F401
+import src.employees.models  # noqa: F401
 
 # Directories
 import src.nds.models  # noqa: F401
