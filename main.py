@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from src.config import settings
 from src.receipts.routes import router
 
-app = FastAPI(title=settings.app_name, version="1.0.0", swagger_ui_parameters={"theme": "dark"})
+app = FastAPI(title=settings.app_name, version="1.0.0")
 
 # CORS
 app.add_middleware(

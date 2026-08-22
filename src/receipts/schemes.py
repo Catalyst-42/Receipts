@@ -89,6 +89,11 @@ class ReceiptData(BaseModel):
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
+    crpt_id: UUID7 | None = Field(
+        default=None,
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Reference to the original CRPT record",
+    )
     data: dict = Field(
         example={
             "id": 763297079,

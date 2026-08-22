@@ -8,6 +8,7 @@ from alembic import context
 from src.config import settings
 from src.core.db import Base
 
+import src.crpt.models  # noqa: F401
 import src.receipts.models  # noqa: F401
 
 config = context.config

@@ -11,7 +11,6 @@ from src.receipts.schemes import (
     ReceiptData,
     ReceiptsCount,
     TotalSum,
-    ReceiptListResponse,
     ReceiptData,
 )
 
