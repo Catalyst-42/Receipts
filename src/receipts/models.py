@@ -19,6 +19,7 @@ from src.core.db import Base
 if TYPE_CHECKING:
     from src.crpt.models import CrptOrm
     from src.items.models import ItemsOrm
+    from src.shops.models import ShopsOrm
 
 
 class ReceiptsOrm(Base):
@@ -36,11 +37,18 @@ class ReceiptsOrm(Base):
     )
     crpt_id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
-        ForeignKey("crpt_orm.id", ondelete="CASCADE"),
+        ForeignKey("crpt_orm.id", ondelete="RESTRICT"),
         index=True,
         unique=True,
         nullable=False,
         comment="Reference to original CRPT data",
+    )
+    shop_id: Mapped[UUID] = mapped_column(
+        SQL_UUID(as_uuid=True),
+        ForeignKey("shops_orm.id", ondelete="RESTRICT"),
+        index=True,
+        nullable=False,
+        comment="Reference to shop, where receipt was made",
     )
 
     # Fiscal fields
@@ -78,6 +86,11 @@ class ReceiptsOrm(Base):
     # Relations
     crpt: Mapped["CrptOrm"] = relationship(
         "CrptOrm",
+        back_populates="receipt",
+        lazy="selectin",
+    )
+    shop: Mapped["ShopsOrm"] = relationship(
+        "ShopsOrm",
         back_populates="receipt",
         lazy="selectin",
     )

@@ -9,6 +9,7 @@ from src.core.db import Base
 
 if TYPE_CHECKING:
     from src.employees.models import EmployeesOrm
+    from src.receipts.models import ReceiptsOrm
     from src.retailers.models import RetailersOrm
 
 
@@ -47,6 +48,12 @@ class ShopsOrm(Base):
     )
 
     # Relations
+    receipts: Mapped[list["ReceiptsOrm"]] = relationship(
+        "ReceiptsOrm",
+        back_populates="receipt",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
     retailer: Mapped["RetailersOrm"] = relationship(
         "RetailersOrm",
         back_populates="shops",
