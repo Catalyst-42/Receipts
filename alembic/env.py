@@ -23,7 +23,7 @@ import src.receipts.models  # noqa: F401
 # Directories
 import src.nds.models  # noqa: F401
 import src.payments.models  # noqa: F401
-# import src.measures.models  # noqa: F401
+import src.measures.models  # noqa: F401
 # import src.products.models  # noqa: F401
 
 config = context.config
