@@ -13,7 +13,7 @@ import src.crpt.models  # noqa: F401
 
 # Receipts
 import src.receipts.models  # noqa: F401
-# import src.items.models  # noqa: F401
+import src.items.models  # noqa: F401
 
 # Retailers
 import src.retailers.models  # noqa: F401
