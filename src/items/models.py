@@ -1,9 +1,10 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING
-from uuid import UUID, uuid7
+from uuid import uuid7
 
+from pydantic import UUID7
 from sqlalchemy import Float, ForeignKey, Numeric, SmallInteger, String
-from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
@@ -15,16 +16,16 @@ if TYPE_CHECKING:
 class ItemsOrm(Base):
     """Table of all bought items from receipts one by one"""
 
-    id: Mapped[UUID] = mapped_column(
-        SQL_UUID(as_uuid=True),
+    id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
         primary_key=True,
         index=True,
         unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the item",
     )
-    receipt_id: Mapped[UUID] = mapped_column(
-        SQL_UUID(as_uuid=True),
+    receipt_id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("receipts_orm.id", ondelete="RESTRICT"),
         nullable=False,
         index=True,
@@ -38,7 +39,9 @@ class ItemsOrm(Base):
         comment="Employee name",
     )
     price: Mapped[Decimal] = mapped_column(
-        Numeric(15, 2), nullable=False, comment="Price for exactly one measure of item"
+        Numeric(15, 2),
+        nullable=False,
+        comment="Price for exactly one measure of item",
     )
 
     # Receipt item specific

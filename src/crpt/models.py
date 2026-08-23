@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Any
-from uuid import UUID, uuid7
+from uuid import UUID7, uuid7
 
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 class CrptOrm(Base):
     """Table of all CRPT dumps from external API"""
 
-    id: Mapped[UUID] = mapped_column(
-        SQL_UUID(as_uuid=True),
+    id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
         primary_key=True,
         index=True,
         unique=True,

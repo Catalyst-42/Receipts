@@ -1,8 +1,9 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
-from uuid import UUID, uuid7
+from uuid import uuid7
 
+from pydantic import UUID7
 from sqlalchemy import (
     BigInteger,
     DateTime,
@@ -27,7 +28,7 @@ class ReceiptsOrm(Base):
 
     __table_args__ = (UniqueConstraint("t", "s", "fn", "i", "fp", "n"),)
 
-    id: Mapped[UUID] = mapped_column(
+    id: Mapped[UUID7] = mapped_column(
         SQL_UUID(as_uuid=True),
         primary_key=True,
         index=True,
@@ -35,7 +36,7 @@ class ReceiptsOrm(Base):
         default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
     )
-    crpt_id: Mapped[UUID] = mapped_column(
+    crpt_id: Mapped[UUID7] = mapped_column(
         SQL_UUID(as_uuid=True),
         ForeignKey("crpt_orm.id", ondelete="RESTRICT"),
         index=True,
@@ -43,7 +44,7 @@ class ReceiptsOrm(Base):
         nullable=False,
         comment="Reference to original CRPT data",
     )
-    shop_id: Mapped[UUID] = mapped_column(
+    shop_id: Mapped[UUID7] = mapped_column(
         SQL_UUID(as_uuid=True),
         ForeignKey("shops_orm.id", ondelete="RESTRICT"),
         index=True,

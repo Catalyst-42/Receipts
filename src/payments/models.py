@@ -1,5 +1,4 @@
 from sqlalchemy import SmallInteger, String
-from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.db import Base
@@ -24,5 +23,5 @@ class PaymentsOrm(Base):
     pf_format: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment="Short string code for print format of payment type"
+        comment="Short string code for print format of payment type",
     )

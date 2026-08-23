@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from src.shops.models import ShopsOrm
 
 
-class RetailersOrm(Base):
+class ShopsOrm(Base):
     """Table of all retailers (companies)"""
 
     id: Mapped[UUID] = mapped_column(

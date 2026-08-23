@@ -31,7 +31,7 @@ class ReceiptService:
 
     async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptData:
         """Returns receipt response by its UUID"""
-        receipt = await self.receipts_dao.get_receipt_by_id(receipt_id)
+        receipt = await self.receipts_dao.get_by_id(receipt_id)
         if not receipt:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -47,7 +47,7 @@ class ReceiptService:
         self, fiscal_data: GetReceiptByFiscalDataRequest
     ) -> ReceiptData:
         """Tries to find receipt locally or in CRPT"""
-        existing_receipt = await self.receipts_dao.get_receipt_by_fiscal_data(
+        existing_receipt = await self.receipts_dao.get_by_fiscal_fields(
             t=fiscal_data.t_datetime,
             s=fiscal_data.s,
             fn=fiscal_data.fn,
@@ -97,7 +97,7 @@ class ReceiptService:
         )
 
     async def get_json_dump(self) -> StreamingResponse:
-        receipts = await self.receipts_dao.get_receipts_all()
+        receipts = await self.receipts_dao.get_all()
 
         async def generate():
             yield "["
