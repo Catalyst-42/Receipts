@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Sequence
 
 from src.payments.model import PaymentsOrm
 
@@ -7,6 +8,12 @@ from src.payments.model import PaymentsOrm
 class PaymentsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_all(self) -> Sequence[PaymentsOrm]:
+        stmt = select(PaymentsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
     async def get_by_id(self, payment_id: int) -> PaymentsOrm | None:
         stmt = select(PaymentsOrm).where(PaymentsOrm.id == payment_id)

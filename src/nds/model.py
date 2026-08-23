@@ -5,7 +5,7 @@ from src.core.db import Base
 
 
 class NdsOrm(Base):
-    """Directory table of all VAT (НДС) types"""
+    """Directory table of all NDS (VAT) types"""
 
     # See https://www.consultant.ru/document/cons_doc_LAW_362322/338afff6ce138d548f34d24c40f7a7b1c2185ecc/ for ids
     id: Mapped[int] = mapped_column(
@@ -13,7 +13,7 @@ class NdsOrm(Base):
         primary_key=True,
         index=True,
         unique=True,
-        comment="Unique identifier of the VAT (НДС)",
+        comment="Unique identifier of the NDS (VAT)",
     )
     rate_name: Mapped[str] = mapped_column(
         String,
@@ -23,5 +23,5 @@ class NdsOrm(Base):
     pf_format: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment="Short string code for print format of VAT type",
+        comment="Short string code for print format of NDS (VAT) type",
     )
