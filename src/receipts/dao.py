@@ -6,7 +6,7 @@ from pydantic import UUID7
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.receipts.models import ReceiptsOrm
+from src.receipts.model import ReceiptsOrm
 
 
 class ReceiptsDao:
@@ -14,14 +14,12 @@ class ReceiptsDao:
         self.db = db
 
     async def get_all(self) -> Sequence[ReceiptsOrm]:
-        """Returns all receipts table"""
         stmt = select(ReceiptsOrm)
 
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
     async def get_by_id(self, receipt_id: UUID7) -> ReceiptsOrm | None:
-        """Tries to find receipt by its UUID"""
         stmt = select(ReceiptsOrm).where(ReceiptsOrm.id == receipt_id)
 
         result = await self.db.execute(stmt)
@@ -36,7 +34,6 @@ class ReceiptsDao:
         fp: int,
         n: int,
     ) -> ReceiptsOrm | None:
-        """Tries to find receipt by its fiscal data"""
         stmt = select(ReceiptsOrm).where(
             ReceiptsOrm.t == t,
             ReceiptsOrm.s == s,
@@ -49,20 +46,7 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_receipt_total_sum(self) -> Decimal:
-        """Counts sum of all cost `s` fields in receipts table"""
-        stmt = select(func.sum(ReceiptsOrm.s))
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_receipt_count(self) -> int:
-        """Returns total number of rows in receipts table"""
-        stmt = select(func.count()).select_from(ReceiptsOrm)
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
     async def create_receipt(self, crpt_data: dict) -> ReceiptsOrm:
-        """Creates new record in receipts table from CRPT receipt data"""
         fiscal_data = crpt_data["fiscalData"]
         code_data = fiscal_data["codeData"]
         fiscal_date = code_data["fiscalDate"]
@@ -89,3 +73,13 @@ class ReceiptsDao:
         self.db.add(result)
         await self.db.commit()
         return result
+
+    async def get_total_sum(self) -> Decimal:
+        stmt = select(func.sum(ReceiptsOrm.s))
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(ReceiptsOrm)
+        result = await self.db.execute(stmt)
+        return result.scalar()

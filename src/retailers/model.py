@@ -8,10 +8,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.db import Base
 
 if TYPE_CHECKING:
-    from src.shops.models import ShopsOrm
+    from src.shops.model import ShopsOrm
 
 
-class ShopsOrm(Base):
+class RetailersOrm(Base):
     """Table of all retailers (companies)"""
 
     id: Mapped[UUID] = mapped_column(

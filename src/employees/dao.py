@@ -3,7 +3,7 @@ from pydantic import UUID7
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.employees.models import EmployeesOrm
+from src.employees.model import EmployeesOrm
 
 
 class EmployeesDao:

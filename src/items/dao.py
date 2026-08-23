@@ -4,7 +4,7 @@ from pydantic import UUID7
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.items.models import ItemsOrm
+from src.items.model import ItemsOrm
 
 
 class ItemsDao:

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.core.db import Base
 
 
-class PaymentsDao(Base):
+class MeasuresOrm(Base):
     """Directory table of all measure types"""
 
     # See https://www.consultant.ru/document/cons_doc_LAW_362322/0060b1f1924347c03afbc57a8d4af63888f81c6c/ for ids

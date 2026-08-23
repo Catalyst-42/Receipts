@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
-from uuid import UUID7, uuid7
+from uuid import uuid7
+from pydantic import UUID7
 
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID
@@ -8,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.db import Base
 
 if TYPE_CHECKING:
-    from src.receipts.models import ReceiptsOrm
+    from src.receipts.model import ReceiptsOrm
 
 
 class CrptOrm(Base):

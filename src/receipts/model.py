@@ -19,8 +19,8 @@ from src.core.db import Base
 
 if TYPE_CHECKING:
     from src.crpt.models import CrptOrm
-    from src.items.models import ItemsOrm
-    from src.shops.models import ShopsOrm
+    from src.items.model import ItemsOrm
+    from src.shops.model import RetailersOrm
 
 
 class ReceiptsOrm(Base):
@@ -90,7 +90,7 @@ class ReceiptsOrm(Base):
         back_populates="receipt",
         lazy="selectin",
     )
-    shop: Mapped["ShopsOrm"] = relationship(
+    shop: Mapped["RetailersOrm"] = relationship(
         "ShopsOrm",
         back_populates="receipt",
         lazy="selectin",

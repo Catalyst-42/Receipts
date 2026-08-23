@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.nds.models import NdsOrm
+from src.nds.model import NdsOrm
 
 
 class NdsDao:

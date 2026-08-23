@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.payments.models import PaymentsOrm
+from src.payments.model import PaymentsOrm
 
 
 class PaymentsDao:

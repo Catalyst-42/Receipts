@@ -15,7 +15,7 @@ from src.receipts.schemes import (
     TotalSum,
     ErrorResponse,
 )
-from src.receipts.services import ReceiptService
+from src.receipts.service import ReceiptService
 
 router = APIRouter(tags=["API"])
 

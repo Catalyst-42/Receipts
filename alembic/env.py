@@ -12,19 +12,19 @@ from src.core.db import Base
 import src.crpt.models  # noqa: F401
 
 # Receipts
-import src.receipts.models  # noqa: F401
-import src.items.models  # noqa: F401
+import src.receipts.model  # noqa: F401
+import src.items.model  # noqa: F401
 
 # Retailers
-import src.retailers.models  # noqa: F401
-import src.shops.models  # noqa: F401
-import src.employees.models  # noqa: F401
+import src.retailers.model  # noqa: F401
+import src.shops.model  # noqa: F401
+import src.employees.model  # noqa: F401
 
 # Directories
-import src.nds.models  # noqa: F401
-import src.payments.models  # noqa: F401
+import src.nds.model  # noqa: F401
+import src.payments.model  # noqa: F401
 import src.measures.models  # noqa: F401
-import src.products.models  # noqa: F401
+import src.products.model  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", str(settings.database_url))

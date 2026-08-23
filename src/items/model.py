@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.db import Base
 
 if TYPE_CHECKING:
-    from src.receipts.models import ReceiptsOrm
+    from src.receipts.model import ReceiptsOrm
 
 
 class ItemsOrm(Base):

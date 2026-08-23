@@ -21,12 +21,12 @@ class ReceiptService:
 
     async def get_receipt_count(self) -> ReceiptsCount:
         """Returns total number of rows in receipts table"""
-        count = await self.receipts_dao.get_receipt_count()
+        count = await self.receipts_dao.get_count()
         return ReceiptsCount(count=count)
 
     async def get_receipt_total_sum(self) -> TotalSum:
         """Returns total sum of all collected receipts"""
-        total_sum = await self.receipts_dao.get_receipt_total_sum()
+        total_sum = await self.receipts_dao.get_total_sum()
         return TotalSum(total_sum=total_sum)
 
     async def get_receipt_by_id(self, receipt_id: UUID7) -> ReceiptData:
