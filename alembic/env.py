@@ -21,9 +21,9 @@ import src.shops.model  # noqa: F401
 import src.employees.model  # noqa: F401
 
 # Directories
+import src.measures.models  # noqa: F401
 import src.nds.model  # noqa: F401
 import src.payments.model  # noqa: F401
-import src.measures.models  # noqa: F401
 import src.products.model  # noqa: F401
 
 config = context.config

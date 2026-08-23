@@ -9,7 +9,7 @@ from src.core.schemes import ErrorResponse
 from src.nds.schemes import GetNdsByIdRequest, Nds, NdsList
 from src.nds.service import NdsService
 
-router = APIRouter(prefix="/nds", tags=["NDS rates"])
+router = APIRouter(prefix="/nds", tags=["Nds"])
 
 
 def get_measures_service(db: AsyncSession = Depends(get_db)):

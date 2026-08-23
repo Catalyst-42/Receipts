@@ -10,7 +10,7 @@ from src.payments.schemes import GetPaymentByIdRequest, Payment, PaymentList
 
 from src.payments.service import PaymentsService
 
-router = APIRouter(prefix="/payments", tags=["Payment types"])
+router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
 def get_measures_service(db: AsyncSession = Depends(get_db)):
