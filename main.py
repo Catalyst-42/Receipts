@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from src.config import settings
 # from src.receipts.router import router as receipts_router
 from src.measures.router import router as measures_router
+from src.nds.router import router as nds_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
@@ -28,6 +29,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Routes
 # app.include_router(receipts_router)
 app.include_router(measures_router)
+app.include_router(nds_router)
 
 
 if __name__ == "__main__":

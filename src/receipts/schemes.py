@@ -202,6 +202,3 @@ class ReceiptData(BaseModel):
 class ReceiptListResponse(BaseModel):
     receipts: list[ReceiptData]
 
-
-class ErrorResponse(BaseModel):
-    detail: str

@@ -13,8 +13,8 @@ from src.receipts.schemes import (
     ReceiptData,
     GetReceiptByFiscalDataRequest,
     TotalSum,
-    ErrorResponse,
 )
+from src.core.schemes import ErrorResponse
 from src.receipts.service import ReceiptService
 
 router = APIRouter(tags=["API"])

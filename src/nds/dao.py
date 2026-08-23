@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +9,12 @@ from src.nds.model import NdsOrm
 class NdsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_all(self) -> Sequence[NdsOrm]:
+        stmt = select(NdsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
     async def get_by_id(self, nds_id: int) -> NdsOrm | None:
         stmt = select(NdsOrm).where(NdsOrm.id == nds_id)

@@ -31,7 +31,7 @@ def upgrade() -> None:
     op.bulk_insert(
         measures,
         [
-            {'id': 0, 'pf_format': 'шт. или ед.', 'description': 'Штука'},
+            {'id': 0, 'pf_format': 'шт', 'description': 'Штука'},
             {'id': 10, 'pf_format': 'г', 'description': 'Грамм'},
             {'id': 11, 'pf_format': 'кг', 'description': 'Килограмм'},
             {'id': 12, 'pf_format': 'т', 'description': 'Тонна'},
