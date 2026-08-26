@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from src.core.middleware import ProcessTimeMiddleware
 
 from src.config import settings
 from src.core.router import router as core_router
@@ -21,6 +22,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    ProcessTimeMiddleware,
 )
 
 # Redirect

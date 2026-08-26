@@ -1,20 +1,20 @@
 from typing import Any
 
 from fastapi import HTTPException, status
-from httpx import AsyncClient, ConnectError
+from httpx import AsyncClient
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
+from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
 from src.crpt.schemes import Crpt, CrptList
 from src.receipts.schemes import FiscalFields
-from src.registry.schemes import Registry
-from src.crpt.models import CrptOrm
 
 
 class CrptService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.crpt_dao = CrptDao(db)
 
     async def get_all(self) -> CrptList:
@@ -26,7 +26,7 @@ class CrptService:
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Crpt dump with id {crpt_id} not found"
+                detail=f"Crpt dump with id {crpt_id} not found",
             )
 
         return Crpt.model_validate(result)
@@ -36,7 +36,7 @@ class CrptService:
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Crpt dump with qr code {qr_code} not found"
+                detail=f"Crpt dump with qr code {qr_code} not found",
             )
 
         return Crpt.model_validate(result)
@@ -73,6 +73,7 @@ class CrptService:
 
             return response
 
+    @transactional
     async def create(self, dump: dict[str, Any]) -> Crpt:
         result = await self.crpt_dao.get_by_qr_code(dump["code"])
         if not result:

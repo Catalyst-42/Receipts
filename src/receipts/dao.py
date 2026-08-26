@@ -50,7 +50,7 @@ class ReceiptsDao:
         self,
         crpt_id: UUID7,
         shop_id: UUID7,
-        employee_id: UUID7,
+        employee_id: UUID7 | None,
         t: datetime,
         s: Decimal,
         fn: int,
@@ -71,7 +71,7 @@ class ReceiptsDao:
         )
 
         self.db.add(result)
-        await self.db.commit()
+        await self.db.flush()
         return result
 
     async def get_total_sum(self) -> Decimal:

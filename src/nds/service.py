@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 class NdsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.nds_dao = NdsDao(db)
 
     async def get_all(self) -> NdsList:

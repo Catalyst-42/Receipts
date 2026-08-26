@@ -28,7 +28,7 @@ async def process_single_image(
     verify_ssl = False
 
     response = requests.get(
-        f"{api_base_url}/api/receipts/by-fiscal-data?{qr_code}", verify=verify_ssl
+        f"{api_base_url}/registry?{qr_code}", verify=verify_ssl
     )
     return response.status_code == 200 and response.json().get("success")
 

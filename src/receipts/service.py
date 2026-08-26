@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.receipts.dao import ReceiptsDao
 from src.receipts.schemes import FiscalFields, Receipt
-
+from src.core.transactional import transactional
 
 class ReceiptsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.receipts_dao = ReceiptsDao(db)
 
     async def get_by_id(self, receipt_id: UUID7) -> Receipt:
@@ -37,11 +38,12 @@ class ReceiptsService:
 
         return Receipt.model_validate(result)
 
+    @transactional
     async def create(
         self,
         crpt_id: UUID7,
         shop_id: UUID7,
-        employee_id: UUID7,
+        employee_id: UUID7 | None,
         fiscal_fields: FiscalFields,
     ) -> Receipt:
         result = await self.receipts_dao.get_by_fiscal_fields(

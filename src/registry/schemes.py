@@ -14,4 +14,4 @@ class Registry(BaseModel):
     items: list[Item]
     retailer: Retailer
     shop: Shop
-    employee: Employee
+    employee: Employee | None

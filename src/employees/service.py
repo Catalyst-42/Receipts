@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.employees.dao import EmployeesDao
 from src.employees.schemes import Employee, EmployeeList
-
+from src.core.transactional import transactional
 
 class EmployeesService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.employees_dao = EmployeesDao(db)
 
     async def get_all(self) -> EmployeeList:
@@ -25,6 +26,7 @@ class EmployeesService:
 
         return Employee.model_validate(result)
 
+    @transactional
     async def create(self, shop_id: UUID7, name: str) -> Employee:
         result = await self.employees_dao.get_by_shop_and_name(shop_id, name)
         if not result:

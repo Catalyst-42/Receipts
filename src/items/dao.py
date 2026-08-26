@@ -55,12 +55,11 @@ class ItemsDao:
         )
 
         self.db.add(result)
-        await self.db.commit()
+        await self.db.flush()
         return result
 
     async def create_many(self, receipt_id: UUID7, items: list[dict]) -> Sequence[ItemsOrm]:
         items = [ItemsOrm(receipt_id=receipt_id, **item) for item in items]
         self.db.add_all(items)
-        await self.db.commit()
         await self.db.flush()
         return items

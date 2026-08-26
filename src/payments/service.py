@@ -7,6 +7,7 @@ from src.payments.schemes import Payment, PaymentList
 
 class PaymentsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.payments_dao = PaymentsDao(db)
 
     async def get_all(self) -> PaymentList:

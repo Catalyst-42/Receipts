@@ -6,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.dao import ItemsDao
 from src.items.schemes import Item, ItemList
-
+from src.core.transactional import transactional
 
 class ItemsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.items_dao = ItemsDao(db)
 
     async def get_all(self) -> ItemList:
@@ -30,6 +31,7 @@ class ItemsService:
 
         return Item.model_validate(result)
 
+    @transactional
     async def create(
         self,
         receipt_id: UUID7,
@@ -56,6 +58,7 @@ class ItemsService:
 
         return Item.model_validate(result)
 
+    @transactional
     async def create_many(self, receipt_id, items) -> ItemList:
         result = await self.items_dao.get_by_receipt_id(receipt_id)
         if not result:

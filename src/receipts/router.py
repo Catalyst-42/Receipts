@@ -44,4 +44,4 @@ async def get_receipt_by_id(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Receipt:
     """Returns full recepie info by fiscal data"""
-    return await receipt_service.register(request)
+    return await receipt_service.get_by_fiscal_fields(request)

@@ -35,10 +35,10 @@ class CrptDao:
         )
 
         self.db.add(result)
-        await self.db.commit()
+        await self.db.flush()
         return result
 
     async def delete(self, crpt: CrptOrm) -> CrptOrm:
         await self.db.delete(crpt)
-        await self.db.commit()
+        await self.db.flush()
         return crpt

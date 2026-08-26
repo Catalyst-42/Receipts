@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 class MeasuresService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.measures_dao = MeasuresDao(db)
 
     async def get_all(self) -> MeasureList:

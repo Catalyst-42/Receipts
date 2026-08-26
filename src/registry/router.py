@@ -18,7 +18,7 @@ def get_registry_service(db: AsyncSession = Depends(get_db)):
 
 
 @router.post(
-    "/",
+    "",
     response_model=Registry,
     responses={
         503: {"model": ErrorResponse, "description": "CRPT API not available"},
@@ -31,8 +31,9 @@ async def create_registry(
     """Registers receipt in project database"""
     return await service.create(request)
 
+
 @router.delete(
-    "/",
+    "",
     response_model=Registry,
     responses={
         404: {"model": ErrorResponse, "description": "Registry not found"},

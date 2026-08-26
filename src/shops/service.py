@@ -4,10 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.shops.dao import ShopsDao
 from src.shops.schemes import Shop, ShopList
+from src.core.transactional import transactional
 
 
 class ShopsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.shops_dao = ShopsDao(db)
 
     async def get_all(self) -> ShopList:
@@ -25,6 +27,7 @@ class ShopsService:
 
         return Shop.model_validate(result)
 
+    @transactional
     async def create(self, retailer_id: UUID7, address: str | None) -> Shop:
         result = await self.shops_dao.get_by_retailer_id_and_address(
             retailer_id, address

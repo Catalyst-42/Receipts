@@ -52,11 +52,11 @@ class ReceiptsOrm(Base):
         nullable=False,
         comment="Reference to shop, where receipt was made",
     )
-    employee_id: Mapped[UUID7] = mapped_column(
+    employee_id: Mapped[UUID7 | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("employees_orm.id", ondelete="CASCADE"),
         index=True,
-        nullable=False,
+        nullable=True,
         comment="Reference to employee, worked on this receipt",
     )
 

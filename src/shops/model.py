@@ -39,7 +39,6 @@ class ShopsOrm(Base):
         UUID(as_uuid=True),
         ForeignKey("retailers_orm.id", ondelete="CASCADE"),
         index=True,
-        unique=True,
         comment="Link on retailer - owner of this shop",
     )
     address: Mapped[str | None] = mapped_column(

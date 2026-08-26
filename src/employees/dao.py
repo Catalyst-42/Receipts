@@ -34,5 +34,5 @@ class EmployeesDao:
         )
 
         self.db.add(result)
-        await self.db.commit()
+        await self.db.flush()
         return result

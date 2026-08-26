@@ -2,12 +2,14 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.transactional import transactional
 from src.retailers.dao import RetailersDao
 from src.retailers.schemes import Retailer, RetailerList
 
 
 class RetailersService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.retailers_dao = RetailersDao(db)
 
     async def get_all(self) -> RetailerList:
@@ -25,6 +27,7 @@ class RetailersService:
 
         return Retailer.model_validate(result)
 
+    @transactional
     async def create(self, inn: str, name: str) -> Retailer:
         result = await self.retailers_dao.get_by_inn(inn)
         if not result:

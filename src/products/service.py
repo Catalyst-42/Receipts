@@ -7,6 +7,7 @@ from src.products.schemes import Product, ProductList
 
 class ProductsService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.products_dao = ProductsDao(db)
 
     async def get_all(self) -> ProductList:

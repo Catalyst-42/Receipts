@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Any
 from uuid import uuid7
-from pydantic import UUID7
 
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID
+from pydantic import UUID7
+from sqlalchemy import Index, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
@@ -14,6 +14,13 @@ if TYPE_CHECKING:
 
 class CrptOrm(Base):
     """Table of all CRPT dumps from external API"""
+
+    __table_args__ = (
+        Index(
+            "ix_crpt_dump_code",
+            text("(dump->>'code')"),
+        ),
+    )
 
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
