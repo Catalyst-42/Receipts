@@ -34,5 +34,6 @@ class CrptOrm(Base):
         "ReceiptsOrm",
         back_populates="crpt",
         uselist=False,
+        cascade="all, delete-orphan",
         lazy="selectin",
     )

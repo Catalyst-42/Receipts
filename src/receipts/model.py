@@ -12,15 +12,16 @@ from sqlalchemy import (
     SmallInteger,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID as SQL_UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
 
 if TYPE_CHECKING:
     from src.crpt.models import CrptOrm
+    from src.employees.model import EmployeesOrm
     from src.items.model import ItemsOrm
-    from src.shops.model import RetailersOrm
+    from src.shops.model import ShopsOrm
 
 
 class ReceiptsOrm(Base):
@@ -29,7 +30,7 @@ class ReceiptsOrm(Base):
     __table_args__ = (UniqueConstraint("t", "s", "fn", "i", "fp", "n"),)
 
     id: Mapped[UUID7] = mapped_column(
-        SQL_UUID(as_uuid=True),
+        UUID(as_uuid=True),
         primary_key=True,
         index=True,
         unique=True,
@@ -37,19 +38,26 @@ class ReceiptsOrm(Base):
         comment="Unique identifier for the receipt",
     )
     crpt_id: Mapped[UUID7] = mapped_column(
-        SQL_UUID(as_uuid=True),
-        ForeignKey("crpt_orm.id", ondelete="RESTRICT"),
+        UUID(as_uuid=True),
+        ForeignKey("crpt_orm.id", ondelete="CASCADE"),
         index=True,
         unique=True,
         nullable=False,
         comment="Reference to original CRPT data",
     )
     shop_id: Mapped[UUID7] = mapped_column(
-        SQL_UUID(as_uuid=True),
-        ForeignKey("shops_orm.id", ondelete="RESTRICT"),
+        UUID(as_uuid=True),
+        ForeignKey("shops_orm.id", ondelete="CASCADE"),
         index=True,
         nullable=False,
         comment="Reference to shop, where receipt was made",
+    )
+    employee_id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees_orm.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+        comment="Reference to employee, worked on this receipt",
     )
 
     # Fiscal fields
@@ -90,9 +98,14 @@ class ReceiptsOrm(Base):
         back_populates="receipt",
         lazy="selectin",
     )
-    shop: Mapped["RetailersOrm"] = relationship(
+    shop: Mapped["ShopsOrm"] = relationship(
         "ShopsOrm",
-        back_populates="receipt",
+        back_populates="receipts",
+        lazy="selectin",
+    )
+    employee: Mapped["EmployeesOrm"] = relationship(
+        "EmployeesOrm",
+        back_populates="receipts",
         lazy="selectin",
     )
     items: Mapped[list["ItemsOrm"]] = relationship(

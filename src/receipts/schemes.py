@@ -2,17 +2,26 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import UUID7, BaseModel, Field, computed_field, field_validator
+from src.crpt.schemes import Crpt
+
+from pydantic import (
+    UUID7,
+    BaseModel,
+    Field,
+    computed_field,
+    field_validator,
+    ConfigDict,
+)
 
 
-class GetReceiptByIdRequest(BaseModel):
+class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
 
 
-class ReceiptsCount(BaseModel):
+class Count(BaseModel):
     count: int = Field(
         example=42,
         description="Total count of receipts in database",
@@ -28,7 +37,7 @@ class TotalSum(BaseModel):
     )
 
 
-class GetReceiptByFiscalDataRequest(BaseModel):
+class FiscalFields(BaseModel):
     t: str = Field(
         example="20231203T2319",
         description="Receipt timestamp",
@@ -83,9 +92,26 @@ class GetReceiptByFiscalDataRequest(BaseModel):
         """Returns fiscal time as datetime object"""
         return self._parse_fiscal_time(self.t)
 
+    @computed_field
+    @property
+    def qr_code(self) -> str:
+        """Returns fiscal fields in URL format stored in QR code"""
+        parts = [
+            f"t={self.t}",
+            f"s={self.s:.2f}",
+            f"fn={self.fn}",
+            f"i={self.i}",
+            f"fp={self.fp}",
+            f"n={self.n}",
+        ]
 
-class ReceiptData(BaseModel):
-    receipt_id: UUID7 = Field(
+        return "&".join(parts)
+
+
+class Receipt(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID7 = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
     )
@@ -94,111 +120,45 @@ class ReceiptData(BaseModel):
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Reference to the original CRPT record",
     )
-    data: dict = Field(
-        example={
-            "id": 763297079,
-            "codeFounded": True,
-            "checkResult": True,
-            "code": "t=20231203T2319&s=261.80&fn=7281440701309134&i=10027&fp=3516337491&n=1",
-            "checkDate": 1785096201320,
-            "category": "fiscal",
-            "status": "received",
-            "codeType": "qr",
-            "codeResolveData": {
-                "gsOne": False,
-                "verified": False,
-                "valid": False,
-                "message": "cannot parse code. AiGroupNotSupportedException: AI group [t] is not supported",
-                "rawCode": "t=20231203T2319&s=261.80&fn=7281440701309134&i=10027&fp=3516337491&n=1",
-                "ais": {},
-                "groups": [],
-                "found": False,
-                "known": False,
-                "isBlocked": False,
-            },
-            "fiscalData": {
-                "codeData": {
-                    "fiscalDate": 1701645540000,
-                    "operationType": 1,
-                    "cost": 26180,
-                    "fiscalDriveNumber": 7281440701309134,
-                    "fiscalDocumentNumber": 10027,
-                    "fiscalSign": 3516337491,
-                },
-                "receipt": {
-                    "message": {"processingStatus": "COMPLETED"},
-                    "cashTotalSum": 0,
-                    "ecashTotalSum": 26180,
-                    "fiscalDocumentNumber": 10027,
-                    "items": [
-                        {
-                            "name": "100193831 ЧАЙ МАРОККАНСКИЙ С Г",
-                            "price": 6900,
-                            "quantity": 2,
-                            "itemsQuantityMeasure": 0,
-                            "sum": 13800,
-                            "nds": 1,
-                            "paymentType": 4,
-                            "productType": 1,
-                            "isProductMarked": False,
-                        },
-                        {
-                            "name": "4660043858820 СЫРОК ГЛАЗИРОВАННЫЙ ",
-                            "price": 5390,
-                            "quantity": 1,
-                            "itemsQuantityMeasure": 0,
-                            "sum": 5390,
-                            "nds": 2,
-                            "rawProductCode": '0104660043858820215Y(k"o',
-                            "gtin": "04660043858820",
-                            "sernum": '5Y(k"o',
-                            "paymentType": 4,
-                            "productType": 33,
-                            "isProductMarked": True,
-                        },
-                        {
-                            "name": "4660043858837 СЫРОК ГЛАЗИРОВАННЫЙ ",
-                            "price": 6990,
-                            "quantity": 1,
-                            "itemsQuantityMeasure": 0,
-                            "sum": 6990,
-                            "nds": 2,
-                            "rawProductCode": "0104660043858837215CNOIV",
-                            "gtin": "04660043858837",
-                            "sernum": "5CNOIV",
-                            "paymentType": 4,
-                            "productType": 33,
-                            "isProductMarked": True,
-                        },
-                    ],
-                    "ofdId": "ofd5",
-                    "operationType": 1,
-                    "operator": "Самообслуживание 2",
-                    "requestNumber": 272,
-                    "retailPlaceAddress": "117525, г. Москва, ул. Днепропетровская, д. 4а, стр. 1",
-                    "shiftNumber": 31,
-                    "totalSum": 26180,
-                    "user": 'ООО "СПАР МИДДЛ ВОЛГА"',
-                    "userInn": "5258056945  ",
-                    "nds10": 1125,
-                    "nds18": 2300,
-                },
-            },
-            "attributes": {
-                "fiscalDate": 1701645540000,
-                "operationType": 1,
-                "cost": 26180,
-                "fiscalDriveNumber": 7281440701309134,
-                "fiscalDocumentNumber": 10027,
-                "fiscalSign": 3516337491,
-            },
-            "wrongDocs": False,
-            "statusV2": "received",
-        },
-        description="Receipt data",
+    shop_id: UUID7 | None = Field(
+        default=None,
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Reference to the shop where receipt was made",
+    )
+    employee_id: UUID7 | None = Field(
+        default=None,
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Reference to the employee who made this receipt",
+    )
+
+    t: datetime = Field(
+        # example="20231203T2319",
+        description="Receipt timestamp",
+        validate_default=True,
+    )
+    s: Decimal = Field(
+        example="261.80",
+        description="Total amount",
+        max_digits=15,
+        decimal_places=2,
+    )
+    fn: int = Field(
+        example=7281440701309134,
+        description="Fiscal drive number (ФН)",
+    )
+    i: int = Field(
+        example=10027,
+        description="Fiscal document number (ФД)",
+    )
+    fp: int = Field(
+        example=3516337491,
+        description="Fiscal sign (ФП)",
+    )
+    n: int = Field(
+        example=1,
+        description="Operation type",
     )
 
 
-class ReceiptListResponse(BaseModel):
-    receipts: list[ReceiptData]
-
+class ReceiptList(BaseModel):
+    items: list[Receipt]

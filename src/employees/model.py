@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.db import Base
 
 if TYPE_CHECKING:
+    from src.receipts.model import ReceiptsOrm
     from src.shops.model import RetailersOrm
 
 
@@ -42,5 +43,10 @@ class EmployeesOrm(Base):
     shop: Mapped["RetailersOrm"] = relationship(
         "ShopsOrm",
         back_populates="employees",
+        lazy="selectin",
+    )
+    receipts: Mapped[list["ReceiptsOrm"]] = relationship(
+        "ReceiptsOrm",
+        back_populates="employee",
         lazy="selectin",
     )

@@ -15,6 +15,14 @@ class RetailersDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_inn(self, inn: str) -> RetailersOrm | None:
+        stmt = select(RetailersOrm).where(
+            RetailersOrm.inn == inn,
+        )
+
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create(
         self,
         inn: str,
@@ -24,7 +32,7 @@ class RetailersDao:
             inn=inn,
             name=name,
         )
-
+    
         self.db.add(result)
         await self.db.commit()
         return result

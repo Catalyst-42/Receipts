@@ -7,7 +7,7 @@ from src.core.db import Base
 class ProductsOrm(Base):
     """Directory table of all product types"""
 
-    # See https://www.consultant.ru/document/cons_doc_LAW_362322/0060b1f1924347c03afbc57a8d4af63888f81c6c/ for ids
+    # See https://www.consultant.ru/document/cons_doc_LAW_362322/cc1e361ee41688e67fe65c4740a242a10c265c86/ for ids
     id: Mapped[int] = mapped_column(
         SmallInteger,
         primary_key=True,

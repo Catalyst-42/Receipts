@@ -23,6 +23,7 @@ asyncpg = "^0.30.0"
 opencv-python = "^4.10.0"
 pyzbar = "^0.1.9"
 python-dotenv = "^1.0.0"
+httpx = "^0.28.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

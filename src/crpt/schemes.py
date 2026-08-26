@@ -3,6 +3,13 @@ from typing import Any
 from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 
+class CrptId(BaseModel):
+    crpt_id: UUID7 = Field(
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Unique id of crpt dump record",
+    )
+
+
 class Crpt(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Any, Sequence
 
 from pydantic import UUID7
 from sqlalchemy import select
@@ -23,7 +23,13 @@ class CrptDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(self, dump: dict) -> CrptOrm:
+    async def get_by_qr_code(self, qr_code: int) -> CrptOrm | None:
+        stmt = select(CrptOrm).where(CrptOrm.dump["code"].astext == qr_code)
+
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create(self, dump: dict[str, Any]) -> CrptOrm:
         result = CrptOrm(
             dump=dump,
         )
@@ -31,3 +37,8 @@ class CrptDao:
         self.db.add(result)
         await self.db.commit()
         return result
+
+    async def delete(self, crpt: CrptOrm) -> CrptOrm:
+        await self.db.delete(crpt)
+        await self.db.commit()
+        return crpt

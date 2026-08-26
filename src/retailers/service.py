@@ -1,0 +1,33 @@
+from fastapi import HTTPException, status
+from pydantic import UUID7
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.retailers.dao import RetailersDao
+from src.retailers.schemes import Retailer, RetailerList
+
+
+class RetailersService:
+    def __init__(self, db: AsyncSession):
+        self.retailers_dao = RetailersDao(db)
+
+    async def get_all(self) -> RetailerList:
+        result = await self.retailers_dao.get_all()
+
+        return RetailerList(items=[Retailer.model_validate(item) for item in result])
+
+    async def get_by_id(self, retailer_id: UUID7) -> Retailer:
+        result = await self.retailers_dao.get_by_id(retailer_id)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Retailer id {retailer_id} not found ",
+            )
+
+        return Retailer.model_validate(result)
+
+    async def create(self, inn: str, name: str) -> Retailer:
+        result = await self.retailers_dao.get_by_inn(inn)
+        if not result:
+            result = await self.retailers_dao.create(inn, name)
+
+        return Retailer.model_validate(result)

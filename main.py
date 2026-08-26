@@ -4,12 +4,13 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
-
-# from src.receipts.router import router as receipts_router
+from src.core.router import router as core_router
 from src.measures.router import router as measures_router
 from src.nds.router import router as nds_router
 from src.payments.router import router as payments_router
 from src.products.router import router as products_router
+from src.receipts.router import router as receipts_router
+from src.registry.router import router as registry_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
@@ -28,9 +29,15 @@ if settings.ssl_keyfile and settings.ssl_certfile:
 
 # Static
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(core_router)
 
-# Routes
-# app.include_router(receipts_router)
+# Core
+app.include_router(registry_router)
+
+# Receipts
+app.include_router(receipts_router)
+
+# Retailers
 
 # Directories
 app.include_router(measures_router)

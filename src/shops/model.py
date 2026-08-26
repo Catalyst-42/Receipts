@@ -37,7 +37,7 @@ class ShopsOrm(Base):
     )
     retailer_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("retailers_orm.id", ondelete="RESTRICT"),
+        ForeignKey("retailers_orm.id", ondelete="CASCADE"),
         index=True,
         unique=True,
         comment="Link on retailer - owner of this shop",
@@ -51,7 +51,7 @@ class ShopsOrm(Base):
     # Relations
     receipts: Mapped[list["ReceiptsOrm"]] = relationship(
         "ReceiptsOrm",
-        back_populates="receipt",
+        back_populates="shop",
         cascade="all, delete-orphan",
         lazy="selectin",
     )

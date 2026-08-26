@@ -46,28 +46,28 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_receipt(self, crpt_data: dict) -> ReceiptsOrm:
-        fiscal_data = crpt_data["fiscalData"]
-        code_data = fiscal_data["codeData"]
-        fiscal_date = code_data["fiscalDate"]
-
-        t = datetime.fromtimestamp(fiscal_date / 1000, tz=timezone.utc).replace(
-            tzinfo=None
-        )
-        s = Decimal(code_data["cost"]) / 100
-        fn = code_data["fiscalDriveNumber"]
-        i = code_data["fiscalDocumentNumber"]
-        fp = code_data["fiscalSign"]
-        n = code_data["operationType"]
-
+    async def create(
+        self,
+        crpt_id: UUID7,
+        shop_id: UUID7,
+        employee_id: UUID7,
+        t: datetime,
+        s: Decimal,
+        fn: int,
+        i: int,
+        fp: int,
+        n: int,
+    ) -> ReceiptsOrm:
         result = ReceiptsOrm(
+            crpt_id=crpt_id,
+            shop_id=shop_id,
+            employee_id=employee_id,
             t=t,
             s=s,
             fn=fn,
             i=i,
             fp=fp,
             n=n,
-            crpt_data=crpt_data,
         )
 
         self.db.add(result)
@@ -76,10 +76,12 @@ class ReceiptsDao:
 
     async def get_total_sum(self) -> Decimal:
         stmt = select(func.sum(ReceiptsOrm.s))
+
         result = await self.db.execute(stmt)
         return result.scalar()
 
     async def get_count(self) -> int:
         stmt = select(func.count()).select_from(ReceiptsOrm)
+
         result = await self.db.execute(stmt)
         return result.scalar()

@@ -11,7 +11,6 @@ class ProductsService:
 
     async def get_all(self) -> ProductList:
         result = await self.products_dao.get_all()
-
         return ProductList(items=[Product.model_validate(item) for item in result])
 
     async def get_by_id(self, product_id: int) -> Product:

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     database_url: str
 
     # CRPT Proxy
-    proxy: str
+    timeout_seconds: int
 
     # Server
     host: str
