@@ -35,7 +35,7 @@ class ItemsOrm(Base):
     # Important
     name: Mapped[str] = mapped_column(
         String,
-        nullable=False,
+        nullable=True,
         comment="Item name",
     )
     price: Mapped[Decimal] = mapped_column(

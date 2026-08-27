@@ -53,7 +53,7 @@ class RegistryService:
         crpt = await self.crpt_service.create(dump)
 
         inn = dump["fiscalData"]["receipt"]["userInn"].strip()
-        name = dump["fiscalData"]["receipt"]["user"].strip()
+        name = dump["fiscalData"]["receipt"].get("user", "").strip()
         retailer = await self.retailers_service.create(
             inn=inn,
             name=name,
@@ -101,14 +101,14 @@ class RegistryService:
         for item in items_data:
             items.append(
                 {
-                    "name": item["name"],
+                    "name": item.get("name", None),
                     "price": Decimal(item["price"]) / 100,
                     "quantity": item["quantity"],
                     "measure": item.get("itemsQuantityMeasure", 255),
                     "total": Decimal(item["sum"]) / 100,
-                    "nds": item["nds"],
+                    "nds": item.get("nds", 6),
                     "payment": item["paymentType"],
-                    "product": item["productType"],
+                    "product": item.get("productType", 4),
                 }
             )
         items = await self.items_service.create_many(receipt.id, items)

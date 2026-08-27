@@ -1,12 +1,14 @@
 from decimal import Decimal
+from typing import Any
 
 from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.transactional import transactional
 from src.items.dao import ItemsDao
 from src.items.schemes import Item, ItemList
-from src.core.transactional import transactional
+
 
 class ItemsService:
     def __init__(self, db: AsyncSession):
@@ -35,7 +37,7 @@ class ItemsService:
     async def create(
         self,
         receipt_id: UUID7,
-        name: str,
+        name: str | None,
         price: Decimal,
         total: Decimal,
         quantity: float,
@@ -59,7 +61,7 @@ class ItemsService:
         return Item.model_validate(result)
 
     @transactional
-    async def create_many(self, receipt_id, items) -> ItemList:
+    async def create_many(self, receipt_id: UUID7, items: list[Any]) -> ItemList:
         result = await self.items_dao.get_by_receipt_id(receipt_id)
         if not result:
             result = await self.items_dao.create_many(receipt_id, items)

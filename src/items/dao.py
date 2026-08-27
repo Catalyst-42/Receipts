@@ -33,7 +33,7 @@ class ItemsDao:
     async def create(
         self,
         receipt_id: UUID7,
-        name: str,
+        name: str | None,
         price: Decimal,
         total: Decimal,
         quantity: float,

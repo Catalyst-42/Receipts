@@ -1,7 +1,7 @@
 from typing import Any
 
 from fastapi import HTTPException, status
-from httpx import AsyncClient
+from httpx import AsyncClient, ConnectError, TimeoutException
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,21 +57,34 @@ class CrptService:
             },
         }
 
-        async with AsyncClient(**client_kwargs) as crpt_client:
-            response = await crpt_client.post(
-                "https://mobile.api.crpt.ru/mobile/check",
-                json={"code": fiscal_fields.qr_code, "codeType": "qr"},
-            )
-            response.raise_for_status()
-            response = response.json()
-
-            if not response.get("codeFounded"):
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Receipt was not found by fiscal data: {response}",
+        try:
+            async with AsyncClient(**client_kwargs) as crpt_client:
+                response = await crpt_client.post(
+                    "https://mobile.api.crpt.ru/mobile/check",
+                    json={"code": fiscal_fields.qr_code, "codeType": "qr"},
                 )
+                response.raise_for_status()
+                response = response.json()
 
-            return response
+                if not response.get("codeFounded"):
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Crpt was not found by qr code",
+                    )
+
+                return response
+
+        except TimeoutException:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="Can not reach the CRPT API by timeout",
+            )
+
+        except ConnectError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No internet connection",
+            )
 
     @transactional
     async def create(self, dump: dict[str, Any]) -> Crpt:
@@ -80,3 +93,11 @@ class CrptService:
             result = await self.crpt_dao.create(dump)
 
         return Crpt.model_validate(result)
+
+    async def delete(self, crpt_id: UUID7) -> Crpt:
+        result = await self.crpt_dao.get_by_id(crpt_id)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Crpt with id {crpt_id} was not found",
+            )

@@ -2,8 +2,6 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from src.crpt.schemes import Crpt
-
 from pydantic import (
     UUID7,
     BaseModel,
@@ -18,22 +16,6 @@ class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
         description="Unique id of scanned receipt",
-    )
-
-
-class Count(BaseModel):
-    count: int = Field(
-        example=42,
-        description="Total count of receipts in database",
-    )
-
-
-class TotalSum(BaseModel):
-    total_sum: Decimal = Field(
-        example="102195.37",
-        description="Total sum of all receipts in database",
-        max_digits=15,
-        decimal_places=2,
     )
 
 

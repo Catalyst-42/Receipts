@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.receipts.dao import ReceiptsDao
 from src.receipts.schemes import FiscalFields, Receipt
 from src.core.transactional import transactional
+from src.core.schemes import Count, Sum
 
 class ReceiptsService:
     def __init__(self, db: AsyncSession):
@@ -37,6 +38,14 @@ class ReceiptsService:
             )
 
         return Receipt.model_validate(result)
+
+    async def get_count(self) -> Count:
+        result = await self.receipts_dao.get_count()
+        return Count(total=result)
+
+    async def get_sum(self) -> Sum:
+        result = await self.receipts_dao.get_sum()
+        return Sum(sum=result)
 
     @transactional
     async def create(

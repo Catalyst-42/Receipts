@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import Sequence
 
@@ -46,6 +46,18 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(ReceiptsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_sum(self) -> Decimal:
+        stmt = select(func.sum(ReceiptsOrm.s))
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
     async def create(
         self,
         crpt_id: UUID7,
@@ -73,15 +85,3 @@ class ReceiptsDao:
         self.db.add(result)
         await self.db.flush()
         return result
-
-    async def get_total_sum(self) -> Decimal:
-        stmt = select(func.sum(ReceiptsOrm.s))
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_count(self) -> int:
-        stmt = select(func.count()).select_from(ReceiptsOrm)
-
-        result = await self.db.execute(stmt)
-        return result.scalar()

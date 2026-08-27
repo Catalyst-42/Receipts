@@ -21,7 +21,7 @@ class Item(BaseModel):
         example="UUID",
         description="Link to receipt containing this item",
     )
-    name: str = Field(
+    name: str | None = Field(
         example="Хлеб",
         description="Item name",
     )
