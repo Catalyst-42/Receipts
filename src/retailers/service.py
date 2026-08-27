@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.retailers.dao import RetailersDao
 from src.retailers.schemes import Retailer, RetailerList
@@ -26,6 +27,10 @@ class RetailersService:
             )
 
         return Retailer.model_validate(result)
+
+    async def get_count(self) -> Count:
+        result = await self.retailers_dao.get_count()
+        return Count(total=result)
 
     @transactional
     async def create(self, inn: str, name: str) -> Retailer:

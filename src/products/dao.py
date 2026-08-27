@@ -1,6 +1,7 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.model import ProductsOrm
 
@@ -20,6 +21,12 @@ class ProductsDao:
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(ProductsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
 
     async def create(
         self,

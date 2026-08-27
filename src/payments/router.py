@@ -13,16 +13,16 @@ from src.payments.service import PaymentsService
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
-def get_measures_service(db: AsyncSession = Depends(get_db)):
+def get_payments_service(db: AsyncSession = Depends(get_db)):
     return PaymentsService(db)
 
 
 @router.get("/", response_model=PaymentList)
 async def get_payment_types(
-    service: PaymentsService = Depends(get_measures_service),
+    payments_service: PaymentsService = Depends(get_payments_service),
 ) -> PaymentList:
     """Returns all directory of payment types"""
-    result = await service.get_all()
+    result = await payments_service.get_all()
     return result
 
 
@@ -35,7 +35,7 @@ async def get_payment_types(
 )
 async def get_payment_type(
     request: Annotated[GetPaymentByIdRequest, Path()],
-    service: PaymentsService = Depends(get_measures_service),
+    service: PaymentsService = Depends(get_payments_service),
 ) -> Payment:
     """Finds payment type by its id"""
     result = await service.get_by_id(request.payment_id)

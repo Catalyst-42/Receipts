@@ -1,6 +1,13 @@
 from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 
+class GetShopByIdRequest(BaseModel):
+    shop_id: UUID7 = Field(
+        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        description="Unique identifier of the shop",
+    )
+
+
 class ShopId(BaseModel):
     retailer_id: UUID7 = Field(
         example="019f9835-fcb5-7263-99e7-4cdf4146abb1",

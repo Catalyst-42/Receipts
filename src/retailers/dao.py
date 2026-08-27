@@ -1,5 +1,5 @@
 from pydantic import UUID7
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.retailers.model import RetailersOrm
@@ -23,6 +23,12 @@ class RetailersDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(RetailersOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
     async def create(
         self,
         inn: str,
@@ -32,7 +38,7 @@ class RetailersDao:
             inn=inn,
             name=name,
         )
- 
+
         self.db.add(result)
         await self.db.flush()
         return result

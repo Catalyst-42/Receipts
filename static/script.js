@@ -8,208 +8,223 @@ let scanner = null;
 
 // HTML Templates
 const CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2"><div class="card-body p-3"><pre class="mb-0"><code class="text-white small">{content}</code></pre></div></div>';
-const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div class="small">{content}</div></div></div>';
-const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div class="small">{content}</div></div></div>';
-const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div class="small">{content}</div></div></div>';
-const EMPLOYEE_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Сотрудник</h6><div class="small">{content}</div></div></div>';
-const ITEMS_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Товары</h6><div class="small">{content}</div></div></div>';
-const LOADING_TEMPLATE = '<div class="text-secondary mt-3"><div class="progress" style="height: 4px;"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div></div></div>';
-const ERROR_TEMPLATE = '<div class="text-danger mt-3" style="padding: 10px; border: 1px solid #dc3545; border-radius: 4px; background-color: #f8d7da;">Error: {message}</div>';
 
-function createCard(content) {
-  return CARD_TEMPLATE.replace('{content}', content);
+const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div class="small" style="max-height: 200px; overflow-y: auto;">{content}</div></div></div>';
+const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div class="small" style="max-height: 200px; overflow-y: auto;">{content}</div></div></div>';
+const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div class="small" style="max-height: 200px; overflow-y: auto;">{content}</div></div></div>';
+const EMPLOYEE_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Сотрудник</h6><div class="small" style="max-height: 200px; overflow-y: auto;">{content}</div></div></div>';
+const ITEMS_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2">Товары</h6><div class="small" style="max-height: 400px; overflow-y: auto;">{content}</div></div></div>';
+const ERROR_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2 mb-2"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small">{content}</div></div></div>';
+
+const LOADING_TEMPLATE = '<div class="loading-bar" style="position: fixed; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #007bff, #0056b3, #007bff); background-size: 200% 100%; animation: loading 1.5s linear infinite; z-index: 9999;"></div><style>@keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }</style>';
+
+function formatNumber(num) {
+  const str = num.toString();
+  if (str.endsWith('.00')) {
+    return str.replace('.00', '');
+  }
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function formatReceiptData(receipt) {
   return `
-<i class="bi bi-calendar3"></i> Дата: ${new Date(receipt.t).toLocaleString('ru-RU')}<br>
-<i class="bi bi-currency-ruble"></i> Сумма: ${receipt.s}₽<br>
-<i class="bi bi-funnel"></i> ФН: ${receipt.fn}<br>
-<i class="bi bi-hash"></i> №: ${receipt.i}<br>
-<i class="bi bi-key"></i> ФП: ${receipt.fp}<br>
-<i class="bi bi-list-ol"></i> Кол-во: ${receipt.n}
-  `.trim();
+<i class="bi bi-calendar3 text-secondary"></i> Дата: ${new Date(receipt.t).toLocaleString('ru-RU')}<br>
+<i class="bi bi-cash-stack text-secondary"></i> Сумма: ${formatNumber(receipt.s)}<br>
+<i class="bi bi-funnel text-secondary"></i> ФН: ${receipt.fn}<br>
+<i class="bi bi-file-earmark-text text-secondary"></i> ФД: ${receipt.fd}<br>
+<i class="bi bi-key text-secondary"></i> ФП: ${receipt.fp}<br>
+<i class="bi bi-calculator text-secondary"></i> Тип расчёта: ${receipt.t}<br>`;
 }
 
 function formatRetailerData(retailer) {
+  const name = retailer.name.replace(/ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ/g, 'ООО');
   return `
-<i class="bi bi-shop"></i> Название: ${retailer.name}<br>
-<i class="bi bi-card-text"></i> ИНН: ${retailer.inn}<br>
-<i class="bi bi-person"></i> Физ. лицо: ${retailer.is_individual ? 'Да' : 'Нет'}
-  `.trim();
+<i class="bi bi-shop text-secondary"></i> Название: ${name}<br>
+<i class="bi bi-card-text text-secondary"></i> ИНН: ${retailer.inn}<br>
+<i class="bi bi-person text-secondary"></i> Физ. лицо: ${retailer.isPhysicalPerson ? 'Да' : 'Нет'}`;
 }
 
 function formatShopData(shop) {
   return `
-<i class="bi bi-geo-alt"></i> Адрес: ${shop.address}<br>
-<i class="bi bi-tag"></i> ID: ${shop.id}
-  `.trim();
+<i class="bi bi-geo-alt text-secondary"></i> Адрес: ${shop.address}`;
 }
 
 function formatEmployeeData(employee) {
   return `
-<i class="bi bi-person-badge"></i> Имя: ${employee.name}<br>
-<i class="bi bi-building"></i> ID магазина: ${employee.shop_id}
-  `.trim();
+<i class="bi bi-person-badge text-secondary"></i> Имя: ${employee.name}`;
 }
 
 function formatItemsData(items) {
-  if (!items || items.length === 0) return 'Нет товаров';
-  
   return items.map(item => `
-<i class="bi bi-cart-plus"></i> ${item.name}<br>
-<i class="bi bi-currency-ruble"></i> Цена: ${item.price}₽<br>
-<i class="bi bi-plus-circle"></i> Кол-во: ${item.quantity}<br>
-<i class="bi bi-cash-stack"></i> Сумма: ${item.total}₽<br>
-<i class="bi bi-percent"></i> НДС: ${item.nds}%<br>
-<i class="bi bi-credit-card"></i> Тип оплаты: ${item.payment}<br>
-<i class="bi bi-box"></i> Тип товара: ${item.product}
-  `.trim()).join('<br><br>');
+<i class="bi bi-cart-plus text-secondary"></i> ${item.name}<br>
+<i class="bi bi-cash-coin text-secondary"></i> Цена: ${formatNumber(item.price)}<br>
+<i class="bi bi-plus-circle text-secondary"></i> Куплено: ${item.quantity}<br>
+<i class="bi bi-cash-stack text-secondary"></i> Сумма: ${formatNumber(item.sum)}<br>
+<i class="bi bi-percent text-secondary"></i> НДС: ${item.vat}%<br>
+<i class="bi bi-credit-card text-secondary"></i> Тип оплаты: ${item.paymentType}<br>
+<i class="bi bi-box text-secondary"></i> Тип товара: ${item.type}<br><br>`).join('');
 }
-function createBeautifulCards(data, decodedText) {
-  let html = '';
 
-  // Loading indicator
-  html += LOADING_TEMPLATE;
-
-  // Receipt Card (main info)
+async function createBeautifulCards(data) {
+  let cardsHtml = '';
+  
   if (data.receipt) {
-    const receiptContent = formatReceiptData(data.receipt);
-    html += createReceiptCard(receiptContent);
+    cardsHtml += RECEIPT_CARD_TEMPLATE.replace('{content}', formatReceiptData(data.receipt));
   }
-
-  // Retailer Card
+  
   if (data.retailer) {
-    const retailerContent = formatRetailerData(data.retailer);
-    html += createRetailerCard(retailerContent);
+    cardsHtml += RETAILER_CARD_TEMPLATE.replace('{content}', formatRetailerData(data.retailer));
   }
-
-  // Shop Card
+  
   if (data.shop) {
-    const shopContent = formatShopData(data.shop);
-    html += createShopCard(shopContent);
+    cardsHtml += SHOP_CARD_TEMPLATE.replace('{content}', formatShopData(data.shop));
   }
-
-  // Employee Card
+  
   if (data.employee) {
-    const employeeContent = formatEmployeeData(data.employee);
-    html += createEmployeeCard(employeeContent);
+    cardsHtml += EMPLOYEE_CARD_TEMPLATE.replace('{content}', formatEmployeeData(data.employee));
   }
-
-  // Items Card
+  
   if (data.items && data.items.length > 0) {
-    const itemsContent = formatItemsData(data.items);
-    html += createItemsCard(itemsContent);
+    cardsHtml += ITEMS_CARD_TEMPLATE.replace('{content}', formatItemsData(data.items));
   }
-
-  return html;
+  
+  if (data.error) {
+    cardsHtml += ERROR_CARD_TEMPLATE.replace('{content}', data.error);
+  }
+  
+  return cardsHtml;
 }
 
-function createReceiptCard(content) {
-  return RECEIPT_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createRetailerCard(content) {
-  return RETAILER_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createShopCard(content) {
-  return SHOP_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createEmployeeCard(content) {
-  return EMPLOYEE_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createItemsCard(content) {
-  return ITEMS_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createError(message) {
-  return ERROR_TEMPLATE.replace('{message}', message);
-}
-
-function onScanSuccess(decodedText) {
-  const qrHighlighted = hljs.highlight(decodedText, { language: 'plaintext' }).value;
-  const qrHtml = createCard(qrHighlighted);
-  const loadingHtml = LOADING_TEMPLATE;
-  resultDiv.innerHTML = qrHtml + loadingHtml;
-
-  const params = new URLSearchParams(decodedText);
-  const url = `/registry?${params.toString()}`;
-
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(res => {
-      if (!res.ok) {
-        return res.text().then(text => {
-          throw new Error(text || `HTTP error! status: ${res.status}`);
-        });
-      }
-      return res.json();
-    })
-    .then(data => {
-      const beautifulCards = createBeautifulCards(data, decodedText);
-      // Remove loading indicator and show QR + beautiful cards
-      resultDiv.innerHTML = qrHtml + beautifulCards.replace(LOADING_TEMPLATE, '');
-
-      if (data.receipt) {
-        updateReceiptCount();
-      }
-    })
-    .catch(err => {
-      resultDiv.innerHTML = qrHtml + createError(err.message);
-    });
-
-  stopScanner();
-}
-
-async function startScanner() {
+async function getRetailerById(retailerId) {
   try {
-    scanner = new Html5Qrcode(reader.id);
-    const config = {
-      fps: 20,
-      qrbox: { width: 200, height: 200 },
-      videoConstraints: {
-        facingMode: "environment",
-        zoom: 3
-      }
-    };
-    await scanner.start(
-      { facingMode: "environment" },
-      config,
-      onScanSuccess,
-      (err) => { }
-    );
-    startBtn.style.display = 'none';
-    stopBtn.style.display = 'inline-block';
-  } catch (err) {
-    resultDiv.innerHTML = createError(err.message || err.toString());
+    const response = await fetch(`/retailers/${retailerId}`);
+    if (!response.ok) throw new Error('Retailer not found');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching retailer:', error);
+    return null;
   }
+}
+
+async function getShopById(shopId) {
+  try {
+    const response = await fetch(`/shops/${shopId}`);
+    if (!response.ok) throw new Error('Shop not found');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching shop:', error);
+    return null;
+  }
+}
+
+async function getEmployeeById(employeeId) {
+  try {
+    const response = await fetch(`/employees/${employeeId}`);
+    if (!response.ok) throw new Error('Employee not found');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching employee:', error);
+    return null;
+  }
+}
+
+async function getItemsById(itemId) {
+  try {
+    const response = await fetch(`/items/${itemId}`);
+    if (!response.ok) throw new Error('Items not found');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching items:', error);
+    return null;
+  }
+}
+
+async function parseQRCode(qrData) {
+  try {
+    const response = await fetch('/api/parse-qr', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ qr_data: qrData })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to parse QR code');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error parsing QR code:', error);
+    throw error;
+  }
+}
+
+async function onScanSuccess(decodedText, decodedResult) {
+async function onScanSuccess(decodedText, decodedResult) {
+  const qrHtml = CARD_TEMPLATE.replace('{content}', `Отсканирован QR код:\n${decodedText}`);
+  const loadingHtml = LOADING_TEMPLATE;
+  
+  resultDiv.innerHTML = qrHtml + loadingHtml;
+  
+  // Останавливаем сканер после успешного сканирования
+  stopScanner();
+  
+  try {
+    const parsedData = await parseQRCode(decodedText);
+    
+    if (parsedData.error) {
+      const errorHtml = ERROR_CARD_TEMPLATE.replace('{content}', parsedData.error);
+      resultDiv.innerHTML = errorHtml;
+      return;
+    }
+    
+    const beautifulCards = await createBeautifulCards(parsedData);
+    resultDiv.innerHTML = beautifulCards;
+    
+  } catch (error) {
+    console.error('Error processing QR code:', error);
+    const errorHtml = ERROR_CARD_TEMPLATE.replace('{content}', `Ошибка: ${error.message}`);
+    resultDiv.innerHTML = errorHtml;
+  }
+}
+
+function onScanFailure(error) {
+  console.warn(`QR scan failed: ${error}`);
+}
+function startScanner() {
+  if (scanner) return;
+  
+  resultDiv.innerHTML = LOADING_TEMPLATE;
+  
+  scanner = new Html5Qrcode("reader").scan(
+    onScanSuccess,
+    onScanFailure
+  ).catch(err => {
+    console.error('Scanner error:', err);
+    scanner = null;
+    resultDiv.innerHTML = ERROR_CARD_TEMPLATE.replace('{content}', 'Не удалось запустить камеру. Пожалуйста, разрешите доступ к камере.');
+  });
 }
 
 function stopScanner() {
   if (scanner) {
-    scanner.stop()
-      .then(() => scanner.clear())
-      .catch((err) => {
-        console.error('Error stopping scanner:', err);
-      });
-    scanner = null;
+    scanner.clear().catch(err => {
+      console.error('Error stopping scanner:', err);
+    }).finally(() => {
+      scanner = null;
+    });
   }
-  startBtn.style.display = 'inline-block';
-  stopBtn.style.display = 'none';
 }
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('/api/receipts/stats/count');
+    const response = await fetch('/receipts/stats/count');
+    if (!response.ok) {
+      throw new Error('Failed to fetch receipt count');
+    }
     const data = await response.json();
-    receiptCountDiv.textContent = data.count;
+    receiptCountDiv.textContent = `Чеков: ${data.count}`;
   } catch (error) {
     receiptCountDiv.textContent = '';
     console.error('Error fetching receipt count:', error);
@@ -221,3 +236,4 @@ updateReceiptCount();
 startBtn.addEventListener('click', startScanner);
 stopBtn.addEventListener('click', stopScanner);
 window.addEventListener('beforeunload', stopScanner);
+});

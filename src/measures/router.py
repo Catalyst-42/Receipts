@@ -18,10 +18,10 @@ def get_measures_service(db: AsyncSession = Depends(get_db)):
 
 @router.get("/", response_model=MeasureList)
 async def get_measures(
-    service: MeasuresService = Depends(get_measures_service),
+    measures_service: MeasuresService = Depends(get_measures_service),
 ) -> MeasureList:
     """Returns all directory of item measures"""
-    result = await service.get_all()
+    result = await measures_service.get_all()
     return result
 
 
@@ -34,8 +34,8 @@ async def get_measures(
 )
 async def get_measure(
     request: Annotated[GetMeasureByIdRequest, Path()],
-    service: MeasuresService = Depends(get_measures_service),
+    measures_service: MeasuresService = Depends(get_measures_service),
 ) -> Measure:
     """Finds measure by its id"""
-    result = await service.get_by_id(request.measure_id)
+    result = await measures_service.get_by_id(request.measure_id)
     return result

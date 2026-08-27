@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.dao import ProductsDao
 from src.products.schemes import Product, ProductList
+from src.core.schemes import Count
 
 
 class ProductsService:
@@ -23,3 +24,7 @@ class ProductsService:
             )
 
         return Product.model_validate(result)
+
+    async def get_count(self) -> Count:
+        result = await self.retailers_dao.get_count()
+        return Count(total=result)

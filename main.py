@@ -2,16 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
-from src.core.middleware import ProcessTimeMiddleware
 
 from src.config import settings
+from src.core.middleware import ProcessTimeMiddleware
 from src.core.router import router as core_router
+from src.employees.router import router as employees_router
+from src.items.router import router as items_router
 from src.measures.router import router as measures_router
 from src.nds.router import router as nds_router
 from src.payments.router import router as payments_router
 from src.products.router import router as products_router
 from src.receipts.router import router as receipts_router
 from src.registry.router import router as registry_router
+from src.retailers.router import router as retailers_router
+from src.shops.router import router as shops_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
@@ -40,8 +44,12 @@ app.include_router(registry_router)
 
 # Receipts
 app.include_router(receipts_router)
+app.include_router(items_router)
 
 # Retailers
+app.include_router(retailers_router)
+app.include_router(shops_router)
+app.include_router(employees_router)
 
 # Directories
 app.include_router(measures_router)

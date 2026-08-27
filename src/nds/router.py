@@ -18,10 +18,10 @@ def get_measures_service(db: AsyncSession = Depends(get_db)):
 
 @router.get("/", response_model=NdsList)
 async def get_nds_rates(
-    service: NdsService = Depends(get_measures_service),
+    nds_service: NdsService = Depends(get_measures_service),
 ) -> NdsList:
     """Returns all directory of nds rates"""
-    result = await service.get_all()
+    result = await nds_service.get_all()
     return result
 
 
@@ -34,8 +34,8 @@ async def get_nds_rates(
 )
 async def get_nds_rate(
     request: Annotated[GetNdsByIdRequest, Path()],
-    service: NdsService = Depends(get_measures_service),
+    nds_service: NdsService = Depends(get_measures_service),
 ) -> Nds:
     """Finds nds rate by its id"""
-    result = await service.get_by_id(request.nds_id)
+    result = await nds_service.get_by_id(request.nds_id)
     return result
