@@ -86,6 +86,11 @@ class RegistryService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry is not found by fiscal fields",
             )
+        if crpt.is_orphan:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Can not delete registry, because it is orphan",
+            )
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.shop.retailer
@@ -108,6 +113,12 @@ class RegistryService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry is not found by fiscal fields",
             )
+        if crpt.is_orphan:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Can not delete registry, because it is orphan",
+            )
+
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.shop.retailer
@@ -235,7 +246,7 @@ class RegistryService:
                 detail="Registry not found by fiscal fields",
             )
 
-        if crpt.receipt is None:
+        if crpt.is_orphan:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Can not delete registry, because it is orphan",

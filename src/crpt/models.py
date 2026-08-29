@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid7
 
 from pydantic import UUID7
-from sqlalchemy import Index, text, Computed
+from sqlalchemy import Index, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -30,10 +30,6 @@ class CrptOrm(Base):
         default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
     )
-    is_orphan: Mapped[bool] = mapped_column(
-        Computed("receipt_id IS NULL", persisted=True),
-        comment="Flag is the record has no associated receipt",
-    )
     dump: Mapped[dict[str, Any]] = mapped_column(
         JSONB,
         nullable=False,
@@ -48,3 +44,8 @@ class CrptOrm(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
+
+    @property
+    def is_orphan(self) -> bool:
+        """Flag if CRPT record are not linked to receipt"""
+        return self.receipt is None
