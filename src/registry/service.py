@@ -87,7 +87,7 @@ class RegistryService:
             receipt=Receipt.model_validate(receipt),
             items=[Item.model_validate(item) for item in items],
             retailer=Retailer.model_validate(retailer),
-            shop=Shop.model_validate(shop),
+            shop=Shop.model_validate(shop) if shop else None,
             employee=Employee.model_validate(employee) if employee else None,
         )
 
@@ -97,7 +97,7 @@ class RegistryService:
         if crpt:
             receipt = crpt.receipt
             items = receipt.items
-            retailer = receipt.shop.retailer
+            retailer = receipt.retailer
             shop = receipt.shop
             employee = receipt.employee
 
@@ -106,7 +106,7 @@ class RegistryService:
                 receipt=Receipt.model_validate(receipt),
                 items=[Item.model_validate(item) for item in items],
                 retailer=Retailer.model_validate(retailer),
-                shop=Shop.model_validate(shop),
+                shop=Shop.model_validate(shop) if shop else None,
                 employee=Employee.model_validate(employee) if employee else None,
             )
 
@@ -121,10 +121,12 @@ class RegistryService:
         )
 
         address = dump["fiscalData"]["receipt"].get("retailPlaceAddress", None)
-        shop = await self.shops_service.create(
-            retailer_id=retailer.id,
-            address=self._str_clean(address),
-        )
+        shop = None
+        if address:
+            shop = await self.shops_service.create(
+                retailer_id=retailer.id,
+                address=self._str_clean(address),
+            )
 
         name = dump["fiscalData"]["receipt"].get("operator", None)
         employee = None
@@ -152,7 +154,7 @@ class RegistryService:
         fiscal_fields = FiscalFields(t=t, s=s, fn=fn, i=i, fp=fp, n=n)
         receipt = await self.receipts_service.create(
             crpt_id=crpt.id,
-            shop_id=shop.id,
+            shop_id=shop.id if shop else None,
             employee_id=employee.id if employee else None,
             fiscal_fields=fiscal_fields,
         )
@@ -200,14 +202,20 @@ class RegistryService:
                 detail="Registry not found by fiscal fields",
             )
 
-        # Skip orphans
-        crpt = await self.crpt_service.delete(crpt)
+        # Skips orphan retailers, shops and employees on deletion
+        crpt = await self.crpt_service.crpt_dao.delete(crpt)
+
+        receipt = crpt.receipt
+        items = receipt.items
+        retailer = receipt.retailer
+        shop = receipt.shop
+        employee = receipt.employee
 
         return Registry(
             crpt=Crpt.model_validate(crpt),
-            receipt=Receipt.model_validate(crpt.receipt),
-            items=[Item.model_validate(item) for item in crpt.receipt.items],
-            retailer=Retailer.model_validate(crpt.receipt.shop.retailer),
-            shop=Shop.model_validate(crpt.receipt.shop),
-            employee=Employee.model_validate(crpt.receipt.employee),
+            receipt=Receipt.model_validate(receipt),
+            items=[Item.model_validate(item) for item in items],
+            retailer=Retailer.model_validate(retailer),
+            shop=Shop.model_validate(shop) if shop else None,
+            employee=Employee.model_validate(employee) if employee else None,
         )

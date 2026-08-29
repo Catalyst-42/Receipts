@@ -130,5 +130,5 @@ class CrptService:
         return StreamingResponse(
             generate(),
             media_type="application/json",
-            headers={"Content-Disposition": "attachment; filename=dump.json"},
+            headers={"Content-Disposition": "attachment; filename=qr_codes_export.json"},
         )

@@ -61,7 +61,7 @@ class ReceiptsDao:
     async def create(
         self,
         crpt_id: UUID7,
-        shop_id: UUID7,
+        shop_id: UUID7 | None,
         employee_id: UUID7 | None,
         t: datetime,
         s: Decimal,

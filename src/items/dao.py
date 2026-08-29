@@ -36,14 +36,24 @@ class ItemsDao:
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def get_sum(self) -> Decimal:
-        stmt = select(func.sum()).select_from(ItemsOrm.total)
+    async def get_count_distinct(self) -> int:
+        stmt = select(func.count(func.distinct(ItemsOrm.name)))
 
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def get_arv_price(self) -> Decimal:
-        stmt = select(func.avg()).select_from(ItemsOrm.price)
+    async def get_avg_price(self) -> Decimal:
+        stmt = select(func.avg(ItemsOrm.price))
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_median_price(self) -> Decimal:
+        stmt = select(
+            func.percentile_cont(0.5)
+            .within_group(ItemsOrm.price.desc())
+            .label("median")
+        )
 
         result = await self.db.execute(stmt)
         return result.scalar()

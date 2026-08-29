@@ -51,7 +51,7 @@ async def delete_registry(
     "/{receipt_id}",
     response_model=Registry,
     responses={
-        503: {"model": ErrorResponse, "description": "CRPT API not available"},
+        404: {"model": ErrorResponse, "description": "Registry not found"},
     },
 )
 async def get_registry_by_receipt_id(

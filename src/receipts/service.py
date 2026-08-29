@@ -57,7 +57,7 @@ class ReceiptsService:
     async def create(
         self,
         crpt_id: UUID7,
-        shop_id: UUID7,
+        shop_id: UUID7 | None,
         employee_id: UUID7 | None,
         fiscal_fields: FiscalFields,
     ) -> Receipt:
