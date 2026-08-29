@@ -23,7 +23,7 @@ def process_single_item(
         verify=verify_ssl,
     )
     response.raise_for_status()
-    return response.status_code == 200 and response.json().get("success")
+    return response.status_code == 200
 
 
 async def process_json_file(json_path: str, api_base_url: str) -> None:

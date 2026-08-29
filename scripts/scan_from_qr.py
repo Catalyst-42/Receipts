@@ -27,10 +27,8 @@ async def process_single_image(
 
     verify_ssl = False
 
-    response = requests.get(
-        f"{api_base_url}/registry?{qr_code}", verify=verify_ssl
-    )
-    return response.status_code == 200 and response.json().get("success")
+    response = requests.delete(f"{api_base_url}/registry?{qr_code}", verify=verify_ssl)
+    return response.status_code == 200
 
 
 async def process_qr_images_directory(directory: str, api_base_url: str) -> None:
