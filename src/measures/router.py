@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import Count, ErrorResponse
-from src.measures.schemes import GetMeasureByIdRequest, Measure, MeasureList
+from src.measures.schemes import MeasureId, Measure, MeasureList
 from src.measures.service import MeasuresService
 
 router = APIRouter(prefix="/measures", tags=["Measures"])
@@ -44,7 +44,7 @@ async def get_receipts_count(
     },
 )
 async def get_measure(
-    request: Annotated[GetMeasureByIdRequest, Path()],
+    request: Annotated[MeasureId, Path()],
     measures_service: MeasuresService = Depends(get_measures_service),
 ) -> Measure:
     """Finds measure by its id"""

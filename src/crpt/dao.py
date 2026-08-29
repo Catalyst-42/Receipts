@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
 from pydantic import UUID7
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crpt.models import CrptOrm
@@ -45,12 +45,13 @@ class CrptDao:
         result = CrptOrm(
             dump=dump,
         )
-
         self.db.add(result)
+
         await self.db.flush()
         return result
 
     async def delete(self, crpt: CrptOrm) -> CrptOrm:
         await self.db.delete(crpt)
+
         await self.db.flush()
         return crpt

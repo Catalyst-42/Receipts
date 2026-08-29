@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def transactional(func):
-    """Transactional pattern."""
+    """Transactional pattern"""
 
     @wraps(func)
     async def wrapper(self, *args, **kwargs):

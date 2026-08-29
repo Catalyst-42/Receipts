@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class GetMeasureByIdRequest(BaseModel):
+class MeasureId(BaseModel):
     measure_id: int = Field(
         example=83,
         description="Unique identifier of the measure",

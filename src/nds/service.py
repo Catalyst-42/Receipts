@@ -5,6 +5,7 @@ from src.nds.schemes import Nds, NdsList
 from fastapi import HTTPException, status
 from src.core.schemes import Count
 
+
 class NdsService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -20,7 +21,7 @@ class NdsService:
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Nds rate with id {nds_id} not found "
+                detail=f"Nds rate with id {nds_id} not found ",
             )
 
         return Nds.model_validate(result)

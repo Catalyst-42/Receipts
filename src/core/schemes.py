@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, ConfigDict
 from decimal import Decimal
+
+from pydantic import BaseModel, Field
 
 
 class ErrorResponse(BaseModel):
@@ -9,11 +10,21 @@ class ErrorResponse(BaseModel):
     )
 
 
+class Status(BaseModel):
+    system: bool = Field(
+        example=True,
+        description="Status of a system",
+    )
+    database: bool = Field(
+        example=True,
+        description="Status of a database",
+    )
+
+
 class Average(BaseModel):
     avg: Decimal = Field(
         example=Decimal("480.60"),
         description="Average value",
-        ge=Decimal(0),
     )
 
 
@@ -38,7 +49,6 @@ class Sum(BaseModel):
     sum: Decimal = Field(
         example=Decimal("1286574.34"),
         description="Total sum of prices",
-        ge=Decimal(0),
     )
 
 
@@ -46,5 +56,4 @@ class Median(BaseModel):
     median: Decimal = Field(
         example=Decimal("139.45"),
         description="Median value",
-        ge=Decimal(0),
     )

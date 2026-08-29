@@ -5,7 +5,7 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 class CrptId(BaseModel):
     crpt_id: UUID7 = Field(
-        example="",
+        example="01a04f1b-cb44-71fc-ab71-86620bcd56f0",
         description="Unique id of crpt dump record",
     )
 
@@ -14,7 +14,7 @@ class Crpt(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="",
+        example="01a04f1b-cb44-71fc-ab71-86620bcd56f0",
         description="Unique id of crpt dump record",
     )
     dump: dict[str, Any] = Field(

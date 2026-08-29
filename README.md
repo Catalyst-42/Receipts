@@ -55,3 +55,9 @@ If you do so, just ensure then, that you open an `https` version of a site (`htt
 open https://localhost:8800/
 open https://localhost:8800/docs/
 ```
+
+# External docs
+Table of [nds rate types](https://www.consultant.ru/document/cons_doc_LAW_362322/338afff6ce138d548f34d24c40f7a7b1c2185ecc/)
+Table of [payment types](https://www.consultant.ru/document/cons_doc_LAW_362322/f5f1ab57b729060b906f8beaa1ea6d119c9607a4/)
+Table of [product types](https://www.consultant.ru/document/cons_doc_LAW_362322/cc1e361ee41688e67fe65c4740a242a10c265c86/)
+Table of [measure types](https://www.consultant.ru/document/cons_doc_LAW_362322/0060b1f1924347c03afbc57a8d4af63888f81c6c/)

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class GetNdsByIdRequest(BaseModel):
+class NdsId(BaseModel):
     nds_id: int = Field(
         example=1,
         description="Unique identifier of the VAT (НДС)",

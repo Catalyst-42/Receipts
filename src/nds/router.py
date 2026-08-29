@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.nds.schemes import GetNdsByIdRequest, Nds, NdsList
+from src.nds.schemes import NdsId, Nds, NdsList
 from src.nds.service import NdsService
 from src.core.schemes import Count
 
@@ -45,7 +45,7 @@ async def get_receipts_count(
     },
 )
 async def get_nds_rate(
-    request: Annotated[GetNdsByIdRequest, Path()],
+    request: Annotated[NdsId, Path()],
     nds_service: NdsService = Depends(get_measures_service),
 ) -> Nds:
     """Finds nds rate by its id"""

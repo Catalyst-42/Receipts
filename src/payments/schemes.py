@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class GetPaymentByIdRequest(BaseModel):
+class PaymentId(BaseModel):
     payment_id: int = Field(
         example=3,
         description="Unique identifier of the payment type",

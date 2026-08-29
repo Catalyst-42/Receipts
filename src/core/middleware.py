@@ -5,7 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
-    """Middleware that adds request process time to headers."""
+    """Middleware that adds request process time to headers"""
 
     async def dispatch(self, request: Request, call_next):
         begin = time.perf_counter()

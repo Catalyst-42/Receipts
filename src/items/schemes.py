@@ -14,7 +14,7 @@ class Item(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="",
+        example="01a04f1b-cb78-76b4-881c-1578d3c192bf",
         description="Unique identifier for the item",
     )
     receipt_id: UUID7 = Field(
@@ -22,15 +22,15 @@ class Item(BaseModel):
         description="Link to receipt containing this item",
     )
     name: str | None = Field(
-        example="Хлеб",
+        example="100193831 ЧАЙ МАРОККАНСКИЙ С Г",
         description="Item name",
     )
     price: Decimal = Field(
-        example=Decimal("10.50"),
+        example=Decimal("69.00"),
         description="Price for exactly one measure of item",
     )
     total: Decimal = Field(
-        example=Decimal("21.00"),
+        example=Decimal("138.00"),
         description="Total price of items bought, should be equal to quantity times price",
     )
     quantity: float = Field(
@@ -38,7 +38,7 @@ class Item(BaseModel):
         description="Number of items bought",
     )
     measure: int = Field(
-        example=1,
+        example=0,
         description="Type of measure for bought item (ID from measures_orm)",
     )
     nds: int = Field(
@@ -46,7 +46,7 @@ class Item(BaseModel):
         description="Type of VAT (НДС) for item (ID from nds_orm)",
     )
     payment: int = Field(
-        example=1,
+        example=4,
         description="Item payment type (ID from payments_orm)",
     )
     product: int = Field(

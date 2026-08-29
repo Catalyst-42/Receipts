@@ -3,7 +3,7 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 class RetailerId(BaseModel):
     retailer_id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="01a04f17-5b65-729e-abdf-d20f7c3f7567",
         description="Unique identifier of the retailer",
     )
 
@@ -12,7 +12,7 @@ class Retailer(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="01a04f17-5b65-729e-abdf-d20f7c3f7567",
         description="Unique identifier of the retailer",
     )
     inn: str = Field(

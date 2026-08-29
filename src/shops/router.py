@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.shops.schemes import Shop, GetShopByIdRequest
+from src.shops.schemes import Shop, ShopId
 from src.shops.service import ShopsService
 from src.core.schemes import Count
 
@@ -36,7 +36,7 @@ async def get_receipts_count(
     },
 )
 async def get_shop(
-    request: Annotated[GetShopByIdRequest, Path()],
+    request: Annotated[ShopId, Path()],
     shop_service: ShopsService = Depends(get_shops_service),
 ) -> Shop:
     """Returns shop by its unique id"""

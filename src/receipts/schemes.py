@@ -14,7 +14,7 @@ from pydantic import (
 
 class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(
-        example="",
+        example="01a04f1b-cb73-7110-bd8b-b2eba9b49d11",
         description="Unique id of scanned receipt",
     )
 
@@ -94,35 +94,41 @@ class Receipt(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="",
+        example="01a04f1b-cb73-7110-bd8b-b2eba9b49d11",
         description="Unique id of scanned receipt",
     )
-    crpt_id: UUID7 | None = Field(
+    crpt_id: UUID7 = Field(
         default=None,
-        example="",
+        example="01a04f1b-cb44-71fc-ab71-86620bcd56f0",
         description="Reference to the original CRPT record",
+    )
+    retailer_id: UUID7 = Field(
+        default=None,
+        example="01a04f17-5b65-729e-abdf-d20f7c3f7567",
+        description="Reference to the retailer of a shop",
     )
     shop_id: UUID7 | None = Field(
         default=None,
-        example="",
+        example="01a04f1b-cb6e-7369-8c90-95f53acfe703",
         description="Reference to the shop where receipt was made",
     )
     employee_id: UUID7 | None = Field(
         default=None,
-        example="",
+        example="01a04f1b-cb71-7123-b575-91edea76f251",
         description="Reference to the employee who made this receipt",
     )
 
     t: datetime = Field(
-        # example="20231203T2319",
-        description="Receipt timestamp",
+        example="2023-12-03T23:19:00",
+        description="Formatted receipt timestamp",
         validate_default=True,
     )
     s: Decimal = Field(
-        example="261.80",
+        example=Decimal("261.80"),
         description="Total amount",
         max_digits=15,
         decimal_places=2,
+        gt=0,
     )
     fn: int = Field(
         example=7281440701309134,

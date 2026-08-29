@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.payments.schemes import GetPaymentByIdRequest, Payment, PaymentList
+from src.payments.schemes import PaymentId, Payment, PaymentList
 from src.core.schemes import Count
 
 from src.payments.service import PaymentsService
@@ -46,7 +46,7 @@ async def get_receipts_count(
     },
 )
 async def get_payment_type(
-    request: Annotated[GetPaymentByIdRequest, Path()],
+    request: Annotated[PaymentId, Path()],
     service: PaymentsService = Depends(get_payments_service),
 ) -> Payment:
     """Finds payment type by its id"""
