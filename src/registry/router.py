@@ -48,6 +48,21 @@ async def delete_registry(
 
 
 @router.get(
+    "/by-fiscal-fields",
+    response_model=Registry,
+    responses={
+        404: {"model": ErrorResponse, "description": "Registry not found"},
+    },
+)
+async def get_registry_by_fiscal_fields(
+    request: Annotated[FiscalFields, Query()],
+    service: RegistryService = Depends(get_registry_service),
+) -> Registry:
+    """Returns registry of a receipt found by fiscal fields"""
+    return await service.get(request)
+
+
+@router.get(
     "/{receipt_id}",
     response_model=Registry,
     responses={
@@ -58,5 +73,5 @@ async def get_registry_by_receipt_id(
     request: Annotated[ReceiptId, Path()],
     service: RegistryService = Depends(get_registry_service),
 ) -> Registry:
-    """Returns registry of a receipts in project database"""
-    return await service.get(request.receipt_id)
+    """Returns registry of a receipts found by receipt id"""
+    return await service.get_by_receipt_id(request.receipt_id)

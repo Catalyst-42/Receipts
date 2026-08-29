@@ -83,7 +83,7 @@ class CrptService:
         except TimeoutException:
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail="Can not reach the CRPT API by timeout",
+                detail="Cannot reach the CRPT API by timeout",
             )
 
         except ConnectError:

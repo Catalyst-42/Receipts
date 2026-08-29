@@ -18,12 +18,13 @@ def process_single_item(
 
     verify_ssl = False
 
-    response = requests.post(
+    response = requests.delete(
         f"{api_base_url}/registry?{qr_code}",
         verify=verify_ssl,
     )
-    response.raise_for_status()
-    return response.status_code == 200
+    if response.status_code != 404:
+        response.raise_for_status()
+    return response.status_code in (200, 404)
 
 
 async def process_json_file(json_path: str, api_base_url: str) -> None:

@@ -25,7 +25,15 @@ def upgrade() -> None:
                existing_type=sa.UUID(),
                nullable=True,
                existing_comment='Foreign key to shops table')
-    op.add_column('receipts_orm', sa.Column('retailer_id', sa.UUID(), nullable=False, comment='Reference to original CRPT data'))
+
+    op.add_column('receipts_orm', sa.Column('retailer_id', sa.UUID(), nullable=True, comment='Reference to original CRPT data'))
+    op.execute(sa.text("""
+        UPDATE receipts_orm r
+        SET retailer_id = s.retailer_id
+        FROM shops_orm s
+        WHERE r.shop_id = s.id
+    """))
+    op.alter_column('receipts_orm', sa.Column('retailer_id', sa.UUID(), nullable=False, comment='Reference to original CRPT data'))
     op.alter_column('receipts_orm', 'shop_id',
                existing_type=sa.UUID(),
                nullable=True,

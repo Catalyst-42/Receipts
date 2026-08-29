@@ -43,6 +43,11 @@ class ReceiptsService:
 
     async def get_items(self, receipt_id: UUID7) -> ItemList:
         result = await self.receipts_dao.get_by_id(receipt_id)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Receipt with id {receipt_id} was not found",
+            )
         return ItemList(items=[Item.model_validate(item) for item in result.items])
 
     async def get_count(self) -> Count:
@@ -57,6 +62,7 @@ class ReceiptsService:
     async def create(
         self,
         crpt_id: UUID7,
+        retailer_id: UUID7,
         shop_id: UUID7 | None,
         employee_id: UUID7 | None,
         fiscal_fields: FiscalFields,
@@ -72,6 +78,7 @@ class ReceiptsService:
         if not result:
             result = await self.receipts_dao.create(
                 crpt_id,
+                retailer_id,
                 shop_id,
                 employee_id,
                 fiscal_fields.t_datetime,

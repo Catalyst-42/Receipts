@@ -32,7 +32,7 @@ class RegistryService:
         self.shops_service = ShopsService(db)
         self.employees_service = EmployeesService(db)
 
-    def _str_clean(string: str | None) -> str | None:
+    def _str_clean(self, string: str | None) -> str | None:
         """Strips input and removes space duplication"""
         if string is None:
             return None
@@ -51,16 +51,19 @@ class RegistryService:
         name = sub(
             "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
             "ООО",
+            name,
             flags=IGNORECASE,
         )
-        name = name.replace(
+        name = sub(
             "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
             "ФГБУК",
+            name,
             flags=IGNORECASE,
         )
-        name = name.replace(
+        name = sub(
             "АКЦИОНЕРНОЕ ОБЩЕСТВО",
             "АО",
+            name,
             flags=IGNORECASE,
         )
 
@@ -69,9 +72,38 @@ class RegistryService:
 
         return name
 
-    async def get(self, receipt_id: UUID7) -> Registry:
+    async def get(self, fiscal_fields: FiscalFields) -> Registry:
+        receipt = await self.receipts_service.receipts_dao.get_by_fiscal_fields(
+            fiscal_fields.t_datetime,
+            fiscal_fields.s,
+            fiscal_fields.fn,
+            fiscal_fields.i,
+            fiscal_fields.fp,
+            fiscal_fields.n,
+        )
+        if not receipt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Registry is not found by fiscal fields",
+            )
+        crpt = receipt.crpt
+        items = receipt.items
+        retailer = receipt.shop.retailer
+        shop = receipt.shop
+        employee = receipt.employee
+
+        return Registry(
+            crpt=Crpt.model_validate(crpt),
+            receipt=Receipt.model_validate(receipt),
+            items=[Item.model_validate(item) for item in items],
+            retailer=Retailer.model_validate(retailer),
+            shop=Shop.model_validate(shop) if shop else None,
+            employee=Employee.model_validate(employee) if employee else None,
+        )
+
+    async def get_by_receipt_id(self, receipt_id: UUID7) -> Registry:
         receipt = await self.receipts_service.receipts_dao.get_by_id(receipt_id)
-        if not receipt_id:
+        if not receipt:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry is not found by fiscal fields",
@@ -154,6 +186,7 @@ class RegistryService:
         fiscal_fields = FiscalFields(t=t, s=s, fn=fn, i=i, fp=fp, n=n)
         receipt = await self.receipts_service.create(
             crpt_id=crpt.id,
+            retailer_id=retailer.id,
             shop_id=shop.id if shop else None,
             employee_id=employee.id if employee else None,
             fiscal_fields=fiscal_fields,
@@ -195,21 +228,27 @@ class RegistryService:
 
     @transactional
     async def delete(self, fiscal_fields: FiscalFields) -> Registry:
-        crpt = await self.crpt_service.get_by_qr_code(fiscal_fields.qr_code)
+        crpt = await self.crpt_service.crpt_dao.get_by_qr_code(fiscal_fields.qr_code)
         if not crpt:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry not found by fiscal fields",
             )
 
-        # Skips orphan retailers, shops and employees on deletion
-        crpt = await self.crpt_service.crpt_dao.delete(crpt)
+        if crpt.receipt is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Can not delete registry, because it is orphan",
+            )
 
         receipt = crpt.receipt
         items = receipt.items
         retailer = receipt.retailer
         shop = receipt.shop
         employee = receipt.employee
+
+        # Skips orphan retailers, shops and employees on deletion
+        crpt = await self.crpt_service.crpt_dao.delete(crpt)
 
         return Registry(
             crpt=Crpt.model_validate(crpt),
