@@ -25,6 +25,7 @@ class RetailersOrm(Base):
     inn: Mapped[str] = mapped_column(
         String(12),
         nullable=False,
+        unique=True,
         comment="INN (TIN) of a company or a single persona",
     )
     is_individual: Mapped[bool] = mapped_column(

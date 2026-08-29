@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
+from src.core.schemes import Count, ErrorResponse
 from src.employees.schemes import Employee, EmployeeId
 from src.employees.service import EmployeesService
 
@@ -14,6 +14,17 @@ router = APIRouter(prefix="/employees", tags=["Employees"])
 
 def get_employees_service(db: AsyncSession = Depends(get_db)):
     return EmployeesService(db)
+
+
+@router.get(
+    "/stats/count",
+    response_model=Count,
+)
+async def get_employees_count(
+    employees_service: EmployeesService = Depends(get_employees_service),
+) -> Count:
+    """Returns total count of employees in database"""
+    return await employees_service.get_count()
 
 
 @router.get(

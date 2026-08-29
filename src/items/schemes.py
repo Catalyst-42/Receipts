@@ -5,7 +5,7 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 class ItemId(BaseModel):
     item_id: UUID7 = Field(
-        example="UUID",
+        example="",
         description="Unique identifier for the item",
     )
 
@@ -14,11 +14,11 @@ class Item(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="UUID",
+        example="",
         description="Unique identifier for the item",
     )
     receipt_id: UUID7 = Field(
-        example="UUID",
+        example="",
         description="Link to receipt containing this item",
     )
     name: str | None = Field(

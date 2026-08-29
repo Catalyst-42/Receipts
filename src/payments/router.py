@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
 from src.payments.schemes import GetPaymentByIdRequest, Payment, PaymentList
+from src.core.schemes import Count
 
 from src.payments.service import PaymentsService
 
@@ -24,6 +25,17 @@ async def get_payment_types(
     """Returns all directory of payment types"""
     result = await payments_service.get_all()
     return result
+
+
+@router.get(
+    "/stats/count",
+    response_model=Count,
+)
+async def get_receipts_count(
+    payments_service: PaymentsService = Depends(get_payments_service),
+) -> Count:
+    """Returns total count of payment types in database"""
+    return await payments_service.get_count()
 
 
 @router.get(

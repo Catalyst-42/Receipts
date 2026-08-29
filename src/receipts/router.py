@@ -8,6 +8,7 @@ from src.core.db import get_db
 from src.core.schemes import Count, ErrorResponse, Sum
 from src.receipts.schemes import FiscalFields, Receipt, ReceiptId
 from src.receipts.service import ReceiptsService
+from src.items.schemes import ItemList
 
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 
@@ -24,7 +25,8 @@ async def get_receipts_count(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Count:
     """Returns total count of receipts in database"""
-    return await receipt_service.get_count()
+    result = await receipt_service.get_count()
+    return result
 
 
 @router.get(
@@ -35,7 +37,8 @@ async def get_receipts_sum(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Sum:
     """Returns total sum of prices of receipts in database"""
-    return await receipt_service.get_sum()
+    result = await receipt_service.get_sum()
+    return result
 
 
 @router.get(
@@ -51,7 +54,24 @@ async def get_receipt_by_fiscal_fields(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Receipt:
     """Returns full recepie info by fiscal data"""
-    return await receipt_service.get_by_fiscal_fields(request)
+    result = await receipt_service.get_by_fiscal_fields(request)
+    return result
+
+
+@router.get(
+    "/{receipt_id}/items",
+    response_model=ItemList,
+    responses={
+        404: {"model": ErrorResponse, "description": "Receipt not found"},
+    },
+)
+async def get_receipt_by_id(
+    request: Annotated[ReceiptId, Path()],
+    receipt_service: ReceiptsService = Depends(get_receipts_service),
+) -> ItemList:
+    """Returns items of receipt by receipt unique id"""
+    result = await receipt_service.get_items(request.receipt_id)
+    return result
 
 
 @router.get(
@@ -66,4 +86,5 @@ async def get_receipt_by_id(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Receipt:
     """Returns receipt info by its unique id"""
-    return await receipt_service.get_by_id(request.receipt_id)
+    result = await receipt_service.get_by_id(request.receipt_id)
+    return result

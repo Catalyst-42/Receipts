@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import HTTPException, status
+from fastapi.responses import StreamingResponse
 from httpx import AsyncClient, ConnectError, TimeoutException
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,7 @@ from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
 from src.crpt.schemes import Crpt, CrptList
 from src.receipts.schemes import FiscalFields
+from src.core.schemes import Count
 
 
 class CrptService:
@@ -40,6 +42,10 @@ class CrptService:
             )
 
         return Crpt.model_validate(result)
+
+    async def get_count(self) -> Count:
+        result = await self.crpt_dao.get_count()
+        return Count(total=result)
 
     async def get_from_crpt_api(self, fiscal_fields: FiscalFields) -> dict[str, Any]:
         client_kwargs = {
@@ -101,3 +107,28 @@ class CrptService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Crpt with id {crpt_id} was not found",
             )
+
+        result = self.crpt_dao.delete(result)
+        return result
+
+    async def export(self) -> StreamingResponse:
+        result = await self.crpt_dao.get_qr_codes()
+        total = len(result)
+
+        async def generate():
+            yield '{\n\t"qr_codes": [\n\t\t'
+            first = True
+            for code in result:
+                if not first:
+                    yield ",\n\t\t"
+                first = False
+                yield f'"{code}"'
+            yield "\n\t],\n\t"
+            yield f'"total": {total}'
+            yield "\n}"
+
+        return StreamingResponse(
+            generate(),
+            media_type="application/json",
+            headers={"Content-Disposition": "attachment; filename=dump.json"},
+        )

@@ -1,8 +1,8 @@
 from decimal import Decimal
+from typing import Sequence
 
 from pydantic import UUID7
-from typing import Sequence
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
@@ -29,6 +29,24 @@ class ItemsDao:
 
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(ItemsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_sum(self) -> Decimal:
+        stmt = select(func.sum()).select_from(ItemsOrm.total)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_arv_price(self) -> Decimal:
+        stmt = select(func.avg()).select_from(ItemsOrm.price)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
 
     async def create(
         self,
@@ -58,7 +76,9 @@ class ItemsDao:
         await self.db.flush()
         return result
 
-    async def create_many(self, receipt_id: UUID7, items: list[dict]) -> Sequence[ItemsOrm]:
+    async def create_many(
+        self, receipt_id: UUID7, items: list[dict]
+    ) -> Sequence[ItemsOrm]:
         items = [ItemsOrm(receipt_id=receipt_id, **item) for item in items]
         self.db.add_all(items)
         await self.db.flush()

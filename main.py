@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from src.config import settings
 from src.core.middleware import ProcessTimeMiddleware
 from src.core.router import router as core_router
+from src.crpt.router import router as crpt_router
 from src.employees.router import router as employees_router
 from src.items.router import router as items_router
 from src.measures.router import router as measures_router
@@ -41,6 +42,7 @@ app.include_router(core_router)
 
 # Core
 app.include_router(registry_router)
+app.include_router(crpt_router)
 
 # Receipts
 app.include_router(receipts_router)

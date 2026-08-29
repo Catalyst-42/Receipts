@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+from re import IGNORECASE, sub
 
 from fastapi import HTTPException, status
+from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.crpt.schemes import Crpt
 from src.crpt.service import CrptService
@@ -31,6 +32,65 @@ class RegistryService:
         self.shops_service = ShopsService(db)
         self.employees_service = EmployeesService(db)
 
+    def _str_clean(string: str | None) -> str | None:
+        """Strips input and removes space duplication"""
+        if string is None:
+            return None
+
+        string = sub(r"\s+", " ", string)
+        string = string.strip()
+
+        return string
+
+    def _name_compress(self, name: str | None, inn: str) -> str | None:
+        """Cleans compresses abbrs of retailer name string"""
+        if name is None:
+            return None
+
+        name = self._str_clean(name)
+        name = sub(
+            "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
+            "ООО",
+            flags=IGNORECASE,
+        )
+        name = name.replace(
+            "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
+            "ФГБУК",
+            flags=IGNORECASE,
+        )
+        name = name.replace(
+            "АКЦИОНЕРНОЕ ОБЩЕСТВО",
+            "АО",
+            flags=IGNORECASE,
+        )
+
+        if len(inn.strip()) != 12 and len(name) > 1 and name[:2].upper() != "ИП":
+            name = f"ИП {name}"
+
+        return name
+
+    async def get(self, receipt_id: UUID7) -> Registry:
+        receipt = await self.receipts_service.receipts_dao.get_by_id(receipt_id)
+        if not receipt_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Registry is not found by fiscal fields",
+            )
+        crpt = receipt.crpt
+        items = receipt.items
+        retailer = receipt.shop.retailer
+        shop = receipt.shop
+        employee = receipt.employee
+
+        return Registry(
+            crpt=Crpt.model_validate(crpt),
+            receipt=Receipt.model_validate(receipt),
+            items=[Item.model_validate(item) for item in items],
+            retailer=Retailer.model_validate(retailer),
+            shop=Shop.model_validate(shop),
+            employee=Employee.model_validate(employee) if employee else None,
+        )
+
     @transactional
     async def create(self, fiscal_fields: FiscalFields) -> Registry:
         crpt = await self.crpt_service.crpt_dao.get_by_qr_code(fiscal_fields.qr_code)
@@ -53,17 +113,17 @@ class RegistryService:
         dump = await self.crpt_service.get_from_crpt_api(fiscal_fields)
         crpt = await self.crpt_service.create(dump)
 
-        inn = dump["fiscalData"]["receipt"]["userInn"].strip()
-        name = dump["fiscalData"]["receipt"].get("user", "").strip()
+        inn = dump["fiscalData"]["receipt"]["userInn"]
+        name = dump["fiscalData"]["receipt"].get("user", "")
         retailer = await self.retailers_service.create(
-            inn=inn,
-            name=name,
+            inn=self._str_clean(inn),
+            name=self._name_compress(name, inn),
         )
 
         address = dump["fiscalData"]["receipt"].get("retailPlaceAddress", None)
         shop = await self.shops_service.create(
             retailer_id=retailer.id,
-            address=address,
+            address=self._str_clean(address),
         )
 
         name = dump["fiscalData"]["receipt"].get("operator", None)
@@ -71,7 +131,7 @@ class RegistryService:
         if name:
             employee = await self.employees_service.create(
                 shop_id=shop.id,
-                name=name,
+                name=self._str_clean(name),
             )
 
         code_data = dump["fiscalData"]["codeData"]
@@ -100,16 +160,24 @@ class RegistryService:
         items_data = dump["fiscalData"]["receipt"]["items"]
         items = []
         for item in items_data:
+            name = item.get("name", None)
+            price = Decimal(item["price"]) / 100
+            quantity = item["quantity"]
+            measure = item.get("itemsQuantityMeasure", 255)
+            total = Decimal(item["sum"]) / 100
+            nds = item.get("nds", 6)
+            payment = item["paymentType"]
+            product = item.get("productType", 4)
             items.append(
                 {
-                    "name": item.get("name", None),
-                    "price": Decimal(item["price"]) / 100,
-                    "quantity": item["quantity"],
-                    "measure": item.get("itemsQuantityMeasure", 255),
-                    "total": Decimal(item["sum"]) / 100,
-                    "nds": item.get("nds", 6),
-                    "payment": item["paymentType"],
-                    "product": item.get("productType", 4),
+                    "name": self._str_clean(name),
+                    "price": price,
+                    "quantity": quantity,
+                    "measure": measure,
+                    "total": total,
+                    "nds": nds,
+                    "payment": payment,
+                    "product": product,
                 }
             )
         items = await self.items_service.create_many(receipt.id, items)

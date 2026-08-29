@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
 from pydantic import UUID7
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crpt.models import CrptOrm
@@ -17,6 +17,12 @@ class CrptDao:
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
+    async def get_qr_codes(self) -> Sequence[str]:
+        stmt = select(CrptOrm.dump["code"].astext.label("code"))
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
     async def get_by_id(self, crpt_id: UUID7) -> CrptOrm | None:
         stmt = select(CrptOrm).where(CrptOrm.id == crpt_id)
 
@@ -28,6 +34,12 @@ class CrptDao:
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_count(self) -> int:
+        stmt = select(func.count()).select_from(CrptOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
 
     async def create(self, dump: dict[str, Any]) -> CrptOrm:
         result = CrptOrm(

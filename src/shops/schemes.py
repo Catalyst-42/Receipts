@@ -3,14 +3,14 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 class GetShopByIdRequest(BaseModel):
     shop_id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Unique identifier of the shop",
     )
 
 
 class ShopId(BaseModel):
     retailer_id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Link on retailer - owner of this shop",
     )
 
@@ -19,11 +19,11 @@ class Shop(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Unique identifier of the retailer",
     )
     retailer_id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Link on retailer - owner of this shop",
     )
     address: str | None = Field(

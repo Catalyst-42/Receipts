@@ -14,7 +14,7 @@ from pydantic import (
 
 class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Unique id of scanned receipt",
     )
 
@@ -94,22 +94,22 @@ class Receipt(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Unique id of scanned receipt",
     )
     crpt_id: UUID7 | None = Field(
         default=None,
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Reference to the original CRPT record",
     )
     shop_id: UUID7 | None = Field(
         default=None,
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Reference to the shop where receipt was made",
     )
     employee_id: UUID7 | None = Field(
         default=None,
-        example="019f9835-fcb5-7263-99e7-4cdf4146abb1",
+        example="",
         description="Reference to the employee who made this receipt",
     )
 

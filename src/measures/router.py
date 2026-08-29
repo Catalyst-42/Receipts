@@ -1,12 +1,12 @@
-from fastapi import Depends
-from fastapi.routing import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 
-from fastapi import Path
+from fastapi import Depends, Path
+from fastapi.routing import APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.measures.schemes import Measure, MeasureList, GetMeasureByIdRequest
+from src.core.schemes import Count, ErrorResponse
+from src.measures.schemes import GetMeasureByIdRequest, Measure, MeasureList
 from src.measures.service import MeasuresService
 
 router = APIRouter(prefix="/measures", tags=["Measures"])
@@ -17,12 +17,23 @@ def get_measures_service(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/", response_model=MeasureList)
-async def get_measures(
+async def get_measure_types(
     measures_service: MeasuresService = Depends(get_measures_service),
 ) -> MeasureList:
     """Returns all directory of item measures"""
     result = await measures_service.get_all()
     return result
+
+
+@router.get(
+    "/stats/count",
+    response_model=Count,
+)
+async def get_receipts_count(
+    measures_service: MeasuresService = Depends(get_measures_service),
+) -> Count:
+    """Returns total count of measure types in database"""
+    return await measures_service.get_count()
 
 
 @router.get(

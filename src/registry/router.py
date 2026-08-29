@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends, Query
+from fastapi import Depends, Query, Path
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.receipts.schemes import FiscalFields
+from src.receipts.schemes import FiscalFields, ReceiptId
 from src.registry.schemes import Registry
 from src.registry.service import RegistryService
 
@@ -45,3 +45,18 @@ async def delete_registry(
 ) -> Registry:
     """Deletes records of a registry"""
     return await service.delete(request)
+
+
+@router.get(
+    "/{receipt_id}",
+    response_model=Registry,
+    responses={
+        503: {"model": ErrorResponse, "description": "CRPT API not available"},
+    },
+)
+async def get_registry_by_receipt_id(
+    request: Annotated[ReceiptId, Path()],
+    service: RegistryService = Depends(get_registry_service),
+) -> Registry:
+    """Returns registry of a receipts in project database"""
+    return await service.get(request.receipt_id)

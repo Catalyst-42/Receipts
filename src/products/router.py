@@ -33,7 +33,7 @@ async def get_product_types(
 async def get_receipts_count(
     products_service: ProductsService = Depends(get_products_service),
 ) -> Count:
-    """Returns total count of products in database"""
+    """Returns total count of product types in database"""
     return await products_service.get_count()
 
 
