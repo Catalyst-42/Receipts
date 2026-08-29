@@ -67,7 +67,7 @@ class RegistryService:
             flags=IGNORECASE,
         )
 
-        if len(inn.strip()) != 12 and len(name) > 1 and name[:2].upper() != "ИП":
+        if len(inn.strip()) == 12 and len(name) > 1 and name[:2].upper() != "ИП":
             name = f"ИП {name}"
 
         return name
@@ -111,17 +111,12 @@ class RegistryService:
         if not receipt:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Registry is not found by fiscal fields",
-            )
-        if crpt.is_orphan:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Can not delete registry, because it is orphan",
+                detail=f"Registry is not found by receipt with id {receipt_id}",
             )
 
         crpt = receipt.crpt
         items = receipt.items
-        retailer = receipt.shop.retailer
+        retailer = receipt.retailer
         shop = receipt.shop
         employee = receipt.employee
 
