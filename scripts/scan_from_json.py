@@ -18,7 +18,7 @@ def process_single_item(
 
     verify_ssl = False
 
-    response = requests.delete(
+    response = requests.post(
         f"{api_base_url}/registry?{qr_code}",
         verify=verify_ssl,
     )
