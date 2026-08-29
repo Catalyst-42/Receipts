@@ -19,12 +19,6 @@ class ShopsOrm(Base):
 
     __table_args__ = (
         UniqueConstraint("retailer_id", "address"),
-        Index(
-            "ix_unique_online_shop_per_retailer",
-            "retailer_id",
-            unique=True,
-            postgresql_where=text("address IS NULL"),
-        ),
     )
 
     id: Mapped[UUID7] = mapped_column(
@@ -41,9 +35,9 @@ class ShopsOrm(Base):
         index=True,
         comment="Link on retailer - owner of this shop",
     )
-    address: Mapped[str | None] = mapped_column(
+    address: Mapped[str] = mapped_column(
         String(),
-        nullable=True,
+        nullable=False,
         comment="Physical address of a shop. Null if shop is online one",
     )
 

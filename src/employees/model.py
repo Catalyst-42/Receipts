@@ -29,7 +29,7 @@ class EmployeesOrm(Base):
     shop_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("shops_orm.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
         comment="Foreign key to shops table",
     )

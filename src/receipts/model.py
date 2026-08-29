@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from src.crpt.models import CrptOrm
     from src.employees.model import EmployeesOrm
     from src.items.model import ItemsOrm
+    from src.retailers.model import RetailersOrm
     from src.shops.model import ShopsOrm
 
 
@@ -45,11 +46,18 @@ class ReceiptsOrm(Base):
         nullable=False,
         comment="Reference to original CRPT data",
     )
-    shop_id: Mapped[UUID7] = mapped_column(
+    retailer_id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("retailers_orm.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+        comment="Reference to original CRPT data",
+    )
+    shop_id: Mapped[UUID7 | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("shops_orm.id", ondelete="CASCADE"),
         index=True,
-        nullable=False,
+        nullable=True,
         comment="Reference to shop, where receipt was made",
     )
     employee_id: Mapped[UUID7 | None] = mapped_column(
@@ -96,6 +104,11 @@ class ReceiptsOrm(Base):
     crpt: Mapped["CrptOrm"] = relationship(
         "CrptOrm",
         back_populates="receipt",
+        lazy="selectin",
+    )
+    retailer: Mapped["RetailersOrm"] = relationship(
+        "RetailersOrm",
+        back_populates="receipts",
         lazy="selectin",
     )
     shop: Mapped["ShopsOrm"] = relationship(

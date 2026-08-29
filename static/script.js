@@ -35,8 +35,8 @@ function formatReceiptData(receipt) {
 }
 
 function formatRetailerData(retailer) {
-  const name = retailer.name.replace(/ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ/g, 'ООО');
-  const type = retailer.is_individual ? 'ИП' : 'Организация';
+  const name = retailer.name;
+  const type = retailer.is_individual ? 'Индивидуальный' : 'Организация';
   return `<i class="bi bi-shop text-secondary"></i> <span class="text-secondary">Название:</span> ${name}<br>
 <i class="bi bi-card-text text-secondary"></i> <span class="text-secondary">ИНН:</span> ${retailer.inn}<br>
 <i class="bi bi-person text-secondary"></i> <span class="text-secondary">Тип:</span> ${type}`;
@@ -52,7 +52,7 @@ function formatEmployeeData(employee) {
 
 function formatItemsData(items) {
   if (!items || items.length === 0) return 'Нет товаров';
-  
+
   return items.map(item => `<i class="bi bi-cart-plus text-secondary"></i> <span class="text-secondary">Название:</span> ${item.name}<br>
 <i class="bi bi-cash-coin text-secondary"></i> <span class="text-secondary">Цена:</span> ${formatNumber(item.price)}₽<br>
 <i class="bi bi-plus-circle text-secondary"></i> <span class="text-secondary">Количество:</span> ${item.quantity}<br>
