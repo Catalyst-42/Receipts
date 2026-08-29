@@ -4,5 +4,6 @@
 *.pem
 
 .vscode/
+dumps/
 test/
 ssl/
