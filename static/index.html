@@ -24,11 +24,18 @@
               <div class="text-secondary h5 mb-0" id="receiptCount"></div>
             </div>
 
-            <div id="reader" class="ratio ratio-1x1 bg-dark rounded mb-3"></div>
+            <div id="reader" class="ratio ratio-1x1 border rounded mb-3" style="overflow: hidden; position: relative; max-width: 100%;"></div>
 
-            <div class="d-flex gap-2 mb-3">
+            <div class="d-flex gap-2 mt-3">
               <button class="btn btn-primary flex-fill" id="startBtn">Запустить</button>
               <button class="btn btn-danger flex-fill" id="stopBtn" style="display:none;">Остановить</button>
+            </div>
+
+            <div class="input-group mt-3">
+              <input type="text" class="form-control" id="manualInput" placeholder="QR код чека">
+              <button class="btn btn-primary" type="button" id="submitBtn">
+                Проверить
+              </button>
             </div>
 
             <div id="result"></div>
