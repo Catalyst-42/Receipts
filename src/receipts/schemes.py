@@ -71,8 +71,8 @@ class FiscalFields(BaseModel):
     @classmethod
     def validate_fiscal_time(cls, value: Any) -> Any:
         """Validates fiscal time date and time format"""
-        cls._parse_fiscal_time(value)
-        return value
+        t_datetime = cls._parse_fiscal_time(value)
+        return t_datetime.strftime("%Y%m%dT%H%M")
 
     @computed_field
     @property
