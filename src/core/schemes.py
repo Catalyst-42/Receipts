@@ -45,8 +45,8 @@ class CountDistinct(Count):
     )
 
 
-class Sum(BaseModel):
-    sum: Decimal = Field(
+class Total(BaseModel):
+    total: Decimal = Field(
         example=Decimal("1286574.34"),
         description="Total sum of prices",
     )

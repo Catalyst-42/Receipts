@@ -52,7 +52,7 @@ class ReceiptsDao:
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def get_sum(self) -> Decimal:
+    async def get_total(self) -> Decimal:
         stmt = select(func.sum(ReceiptsOrm.s))
 
         result = await self.db.execute(stmt)

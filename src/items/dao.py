@@ -6,6 +6,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
+from src.shops.model import ShopsOrm
+from src.receipts.model import ReceiptsOrm
 
 
 class ItemsDao:
@@ -14,6 +16,26 @@ class ItemsDao:
 
     async def get_all(self) -> Sequence[ItemsOrm]:
         stmt = select(ItemsOrm)
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def get_all_by_retailer_id(self, retailer_id: UUID7) -> Sequence[ItemsOrm]:
+        stmt = (
+            select(ItemsOrm)
+            .join(ItemsOrm.receipt)
+            .where(ReceiptsOrm.retailer_id == retailer_id)
+        )
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def get_all_by_shop_id(self, shop_id: UUID7) -> Sequence[ItemsOrm]:
+        stmt = (
+            select(ItemsOrm)
+            .join(ItemsOrm.receipt)
+            .where(ReceiptsOrm.shop_id == shop_id)
+        )
 
         result = await self.db.execute(stmt)
         return result.scalars().all()

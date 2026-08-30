@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import Count, ErrorResponse, Sum
+from src.core.schemes import Count, ErrorResponse, Total
 from src.receipts.schemes import FiscalFields, Receipt, ReceiptId
 from src.receipts.service import ReceiptsService
 from src.items.schemes import ItemList
@@ -30,14 +30,14 @@ async def get_receipts_count(
 
 
 @router.get(
-    "/stats/sum",
-    response_model=Sum,
+    "/stats/total",
+    response_model=Total,
 )
-async def get_receipts_sum(
+async def get_receipts_total(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
-) -> Sum:
+) -> Total:
     """Returns total sum of prices of receipts in database"""
-    result = await receipt_service.get_sum()
+    result = await receipt_service.get_total()
     return result
 
 

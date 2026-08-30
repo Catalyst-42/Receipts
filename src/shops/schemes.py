@@ -8,13 +8,6 @@ class ShopId(BaseModel):
     )
 
 
-class ShopId(BaseModel):
-    retailer_id: UUID7 = Field(
-        example="01a04f17-5b65-729e-abdf-d20f7c3f7567",
-        description="Link on retailer - owner of this shop",
-    )
-
-
 class Shop(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -20,6 +20,14 @@ class ItemsService:
         result = await self.items_dao.get_all()
         return ItemList(items=[Item.model_validate(item) for item in result])
 
+    async def get_all_by_retailer_id(self, retailer_id: UUID7) -> ItemList:
+        result = await self.items_dao.get_all_by_retailer_id(retailer_id)
+        return ItemList(items=[Item.model_validate(item) for item in result])
+
+    async def get_all_by_shop_id(self, shop_id: UUID7) -> ItemList:
+        result = await self.items_dao.get_all_by_shop_id(shop_id)
+        return ItemList(items=[Item.model_validate(item) for item in result])
+
     async def get_by_receipt_id(self, receipt_id: UUID7) -> ItemList:
         result = await self.items_dao.get_by_receipt_id(receipt_id)
         return ItemList(items=[Item.model_validate(item) for item in result])
