@@ -1,14 +1,14 @@
 const reader = document.getElementById('reader');
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
+const scanToggleBtn = document.getElementById('scanToggleBtn');
+const submitBtn = document.getElementById('submitBtn');
 const resultDiv = document.getElementById('result');
 const receiptCountDiv = document.getElementById('receiptCount');
 
 let scanner = null;
+let isScanning = false;
 
 // HTML Templates
 const CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2"><div class="card-body p-3"><pre class="mb-0"><code class="text-white small">{content}</code></pre></div></div>';
-
 const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div class="small">{content}</div></div></div>';
 const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div class="small">{content}</div></div></div>';
 const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div class="small">{content}</div></div></div>';
@@ -98,31 +98,31 @@ function createError(message) {
 function createBeautifulCards(data) {
   let html = '';
 
-  // Receipt Card (first)
+  // Receipt
   if (data.receipt) {
     const receiptContent = formatReceiptData(data.receipt);
     html += createReceiptCard(receiptContent);
   }
 
-  // Items Card (second)
+  // Items
   if (data.items && data.items.length > 0) {
     const itemsContent = formatItemsData(data.items);
     html += createItemsCard(itemsContent);
   }
 
-  // Retailer Card (third)
+  // Retailer
   if (data.retailer) {
     const retailerContent = formatRetailerData(data.retailer);
     html += createRetailerCard(retailerContent);
   }
 
-  // Shop Card (fourth) - may not exist
+  // Shop
   if (data.shop) {
     const shopContent = formatShopData(data.shop);
     html += createShopCard(shopContent);
   }
 
-  // Employee Card (fifth) - may not exist
+  // Employee
   if (data.employee) {
     const employeeContent = formatEmployeeData(data.employee);
     html += createEmployeeCard(employeeContent);
@@ -132,69 +132,20 @@ function createBeautifulCards(data) {
 }
 
 function onScanSuccess(decodedText) {
-  const qrHtml = createCard(decodedText);
-  const loadingHtml = LOADING_TEMPLATE;
-  resultDiv.innerHTML = qrHtml + loadingHtml;
-
-  const params = new URLSearchParams(decodedText);
-  const url = `https://localhost:8800/registry/by-fiscal-fields?${params.toString()}`;
-
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(res => {
-      if (!res.ok) {
-        return res.text().then(text => {
-          try {
-            const errorData = JSON.parse(text);
-            const detail = errorData.detail;
-            if (detail && typeof detail === 'string') {
-              throw new Error(detail);
-            } else {
-              throw new Error(text || `HTTP error! status: ${res.status}`);
-            }
-          } catch {
-            throw new Error(text || `HTTP error! status: ${res.status}`);
-          }
-        });
-      }
-      return res.json();
-    })
-    .then(data => {
-      const beautifulCards = createBeautifulCards(data);
-      // Remove loading indicator and show only beautiful cards (no QR card)
-      resultDiv.innerHTML = beautifulCards;
-
-      if (data.receipt) {
-        updateReceiptCount();
-      }
-    })
-    .catch(err => {
-      const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
-      resultDiv.innerHTML = errorHtml;
-    });
+  const manualInput = document.getElementById('manualInput');
+  manualInput.value = decodedText;
 
   stopScanner();
+  processQRCode(decodedText);
 }
 
-function onManualSubmit() {
-  const manualInput = document.getElementById('manualInput');
-  const inputValue = manualInput.value.trim();
-  
-  if (!inputValue) {
-    resultDiv.innerHTML = createError('Пожалуйста, введите данные чека');
-    return;
-  }
-
+function processQRCode(qrCode) {
   const loadingHtml = LOADING_TEMPLATE;
   resultDiv.innerHTML = loadingHtml;
 
   try {
-    const params = new URLSearchParams(inputValue);
-    const url = `https://localhost:8800/registry/by-fiscal-fields?${params.toString()}`;
+    const params = new URLSearchParams(qrCode);
+    const url = `./registry/by-fiscal-fields?${params.toString()}`;
 
     fetch(url, {
       method: 'POST',
@@ -237,6 +188,71 @@ function onManualSubmit() {
   }
 }
 
+function onManualSubmit() {
+  const manualInput = document.getElementById('manualInput');
+  const inputValue = manualInput.value.trim();
+
+  if (!inputValue) {
+    resultDiv.innerHTML = createError('Пожалуйста, введите данные чека');
+    return;
+  }
+
+  const loadingHtml = LOADING_TEMPLATE;
+  resultDiv.innerHTML = loadingHtml;
+
+  try {
+    const params = new URLSearchParams(inputValue);
+    const url = `./registry/by-fiscal-fields?${params.toString()}`;
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => {
+        if (!res.ok) {
+          return res.text().then(text => {
+            try {
+              const errorData = JSON.parse(text);
+              const detail = errorData.detail;
+              if (detail && typeof detail === 'string') {
+                throw new Error(detail);
+              } else {
+                throw new Error(text || `HTTP error! status: ${res.status}`);
+              }
+            } catch {
+              throw new Error(text || `HTTP error! status: ${res.status}`);
+            }
+          });
+        }
+        return res.json();
+      })
+      .then(data => {
+        const beautifulCards = createBeautifulCards(data);
+        resultDiv.innerHTML = beautifulCards;
+
+        if (data.receipt) {
+          updateReceiptCount();
+        }
+      })
+      .catch(err => {
+        const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
+        resultDiv.innerHTML = errorHtml;
+      });
+  } catch (error) {
+    resultDiv.innerHTML = createError('Ошибка формата данных. Пожалуйста, проверьте ввод.');
+  }
+}
+
+async function toggleScanner() {
+  if (isScanning) {
+    stopScanner();
+  } else {
+    await startScanner();
+  }
+}
+
 async function startScanner() {
   try {
     scanner = new Html5Qrcode(reader.id);
@@ -244,8 +260,9 @@ async function startScanner() {
       fps: 20,
       videoConstraints: {
         facingMode: "environment",
-        zoom: 3
-      }
+        zoom: 1.31,
+      },
+      scale: 2,
     };
     await scanner.start(
       { facingMode: "environment" },
@@ -253,8 +270,10 @@ async function startScanner() {
       onScanSuccess,
       (err) => { }
     );
-    startBtn.style.display = 'none';
-    stopBtn.style.display = 'inline-block';
+    isScanning = true;
+    scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
+    scanToggleBtn.classList.remove('btn-primary');
+    scanToggleBtn.classList.add('btn-danger');
   } catch (err) {
     resultDiv.innerHTML = createError(err.message || err.toString());
   }
@@ -262,20 +281,25 @@ async function startScanner() {
 
 function stopScanner() {
   if (scanner) {
-    scanner.stop()
-      .then(() => scanner.clear())
+    const scannerRef = scanner;
+    scannerRef.stop()
+      .then(() => {
+        return scannerRef.clear();
+      })
       .catch((err) => {
         console.error('Error stopping scanner:', err);
       });
     scanner = null;
   }
-  startBtn.style.display = 'inline-block';
-  stopBtn.style.display = 'none';
+  isScanning = false;
+  scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
+  scanToggleBtn.classList.remove('btn-danger');
+  scanToggleBtn.classList.add('btn-primary');
 }
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('https://localhost:8800/receipts/stats/count');
+    const response = await fetch('./receipts/stats/count');
     const data = await response.json();
     receiptCountDiv.textContent = data.total;
   } catch (error) {
@@ -286,7 +310,6 @@ async function updateReceiptCount() {
 
 updateReceiptCount();
 
-startBtn.addEventListener('click', startScanner);
-stopBtn.addEventListener('click', stopScanner);
-document.getElementById('submitBtn').addEventListener('click', onManualSubmit);
+scanToggleBtn.addEventListener('click', toggleScanner);
+submitBtn.addEventListener('click', onManualSubmit);
 window.addEventListener('beforeunload', stopScanner);

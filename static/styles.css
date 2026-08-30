@@ -1,0 +1,12 @@
+/* Fit scanner video output in square */
+#reader video {
+    object-fit: cover;
+}
+
+/* Remove zoom on button click spam */
+button,
+.btn,
+input,
+.form-control {
+    touch-action: manipulation;
+}

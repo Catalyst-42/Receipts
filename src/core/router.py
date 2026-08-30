@@ -17,7 +17,6 @@ async def root() -> FileResponse:
     """Returns a frontend page with receipt scanner"""
     return FileResponse("static/index.html")
 
-
 @router.get("/status", include_in_schema=False)
 async def get_health(
     db: AsyncSession = Depends(get_db),
