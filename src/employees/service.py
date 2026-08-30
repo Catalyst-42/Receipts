@@ -33,9 +33,13 @@ class EmployeesService:
         return Count(total=result)
 
     @transactional
-    async def create(self, shop_id: UUID7, name: str) -> Employee:
-        result = await self.employees_dao.get_by_shop_and_name(shop_id, name)
+    async def create(
+        self, retailer_id: UUID7, shop_id: UUID7 | None, name: str
+    ) -> Employee:
+        result = await self.employees_dao.get_by_retailer_shop_and_name(
+            retailer_id, shop_id, name
+        )
         if not result:
-            result = await self.employees_dao.create(shop_id, name)
+            result = await self.employees_dao.create(retailer_id, shop_id, name)
 
         return Employee.model_validate(result)

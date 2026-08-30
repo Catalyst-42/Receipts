@@ -18,6 +18,12 @@ class ReceiptId(BaseModel):
         description="Unique id of scanned receipt",
     )
 
+class QRCode(BaseModel):
+    url: str = Field(
+        example="t=20230915T1549&s=8292.00&fn=72814405009495538i=41528fp=2070528798&n=1",
+        description="QR code of scanned receipt"
+    )
+
 
 class FiscalFields(BaseModel):
     t: str = Field(
@@ -41,7 +47,7 @@ class FiscalFields(BaseModel):
     )
     fp: int = Field(
         example=3516337491,
-        description="Fiscal sign (ФП)",
+        description="Fiscal sign (ФП/ФПД)",
     )
     n: int = Field(
         example=1,

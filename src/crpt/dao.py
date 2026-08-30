@@ -29,7 +29,7 @@ class CrptDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_qr_code(self, qr_code: int) -> CrptOrm | None:
+    async def get_by_qr_code(self, qr_code: str) -> CrptOrm | None:
         stmt = select(CrptOrm).where(CrptOrm.dump["code"].astext == qr_code)
 
         result = await self.db.execute(stmt)

@@ -133,7 +133,7 @@ function onScanSuccess(decodedText) {
   resultDiv.innerHTML = qrHtml + loadingHtml;
 
   const params = new URLSearchParams(decodedText);
-  const url = `/registry?${params.toString()}`;
+  const url = `/registry/by-fiscal-fields?${params.toString()}`;
 
   fetch(url, {
     method: 'POST',

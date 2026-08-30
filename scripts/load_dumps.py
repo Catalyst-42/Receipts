@@ -24,7 +24,7 @@ def qr_code(image_path: str) -> str:
 def send_request(qr_code_str: str, api_base_url: str) -> bool:
     if not qr_code_str:
         return False
-    response = requests.post(f"{api_base_url}/registry/by-fiscal-fields/?{qr_code_str}", verify=False)
+    response = requests.post(f"{api_base_url}/registry/by-fiscal-fields?{qr_code_str}", verify=False)
     response.raise_for_status()
     return response.status_code == 200
 
@@ -63,11 +63,8 @@ async def main(path: str, api_base_url: str) -> None:
     total = len(qr_codes)
     for i, code in enumerate(qr_codes, 1):
         print(f"\r{i}/{total}", end=" ", flush=True)
-        try:
-            if send_request(code, api_base_url):
-                successful += 1
-        except requests.exceptions.RequestException:
-            pass
+        if send_request(code, api_base_url):
+            successful += 1
 
     print(f"\rDone with {successful} successful of {total}")
 

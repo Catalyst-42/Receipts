@@ -33,16 +33,6 @@ class CrptService:
 
         return Crpt.model_validate(result)
 
-    async def get_by_qr_code(self, qr_code: str) -> Crpt:
-        result = await self.crpt_dao.get_by_qr_code(qr_code)
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Crpt dump with qr code {qr_code} not found",
-            )
-
-        return Crpt.model_validate(result)
-
     async def get_count(self) -> Count:
         result = await self.crpt_dao.get_count()
         return Count(total=result)

@@ -86,11 +86,6 @@ class RegistryService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry is not found by fiscal fields",
             )
-        if crpt.is_orphan:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Can not delete registry, because it is orphan",
-            )
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.shop.retailer
@@ -131,9 +126,16 @@ class RegistryService:
 
     @transactional
     async def create(self, fiscal_fields: FiscalFields) -> Registry:
-        crpt = await self.crpt_service.crpt_dao.get_by_qr_code(fiscal_fields.qr_code)
-        if crpt:
-            receipt = crpt.receipt
+        receipt = await self.receipts_service.receipts_dao.get_by_fiscal_fields(
+            fiscal_fields.t_datetime,
+            fiscal_fields.s,
+            fiscal_fields.fn,
+            fiscal_fields.i,
+            fiscal_fields.fp,
+            fiscal_fields.n,
+        )
+        if receipt:
+            crpt = receipt.crpt
             items = receipt.items
             retailer = receipt.retailer
             shop = receipt.shop
@@ -170,7 +172,8 @@ class RegistryService:
         employee = None
         if name:
             employee = await self.employees_service.create(
-                shop_id=shop.id,
+                retailer_id=retailer.id,
+                shop_id=shop.id if shop else None,
                 name=self._str_clean(name),
             )
 

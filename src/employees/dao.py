@@ -15,13 +15,21 @@ class EmployeesDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_shop_and_name(
-        self, shop_id: UUID7, name: str
+    async def get_by_retailer_shop_and_name(
+        self, retailer_id: UUID7, shop_id: UUID7 | None, name: str
     ) -> EmployeesOrm | None:
         stmt = select(EmployeesOrm).where(
-            EmployeesOrm.shop_id == shop_id,
+            EmployeesOrm.retailer_id == retailer_id,
             EmployeesOrm.name == name,
         )
+        if shop_id:
+            stmt = stmt.where(
+                EmployeesOrm.shop_id == shop_id,
+            )
+        else:
+            stmt = stmt.where(
+                EmployeesOrm.shop_id.is_(shop_id),
+            )
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -32,8 +40,11 @@ class EmployeesDao:
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def create(self, shop_id: UUID7, name: str) -> EmployeesOrm:
+    async def create(
+        self, retailer_id: UUID7 | None, shop_id: UUID7, name: str
+    ) -> EmployeesOrm:
         result = EmployeesOrm(
+            retailer_id=retailer_id,
             shop_id=shop_id,
             name=name,
         )

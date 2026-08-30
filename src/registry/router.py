@@ -18,7 +18,7 @@ def get_registry_service(db: AsyncSession = Depends(get_db)):
 
 
 @router.post(
-    "",
+    "/by-fiscal-fields",
     response_model=Registry,
     responses={
         503: {"model": ErrorResponse, "description": "CRPT API not available"},
@@ -33,7 +33,7 @@ async def create_registry(
 
 
 @router.delete(
-    "",
+    "/by-fiscal-fields",
     response_model=Registry,
     responses={
         404: {"model": ErrorResponse, "description": "Registry not found"},
