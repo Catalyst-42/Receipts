@@ -43,7 +43,7 @@ class RegistryService:
         return string
 
     def _name_compress(self, name: str | None, inn: str) -> str | None:
-        """Cleans compresses abbrs of retailer name string"""
+        """Cleans and compresses abbrs of retailer name string"""
         if name is None:
             return None
 
@@ -63,6 +63,24 @@ class RegistryService:
         name = sub(
             "АКЦИОНЕРНОЕ ОБЩЕСТВО",
             "АО",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ПУБЛИЧНОЕ АО",
+            "ПАО",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
+            "ГБУК",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ",
+            "ГУП",
             name,
             flags=IGNORECASE,
         )
@@ -86,6 +104,7 @@ class RegistryService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registry is not found by fiscal fields",
             )
+
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.shop.retailer
