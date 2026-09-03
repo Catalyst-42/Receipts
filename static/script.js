@@ -1,3 +1,5 @@
+import QrScanner from 'qr-scanner';
+
 const reader = document.getElementById('reader');
 const scanToggleBtn = document.getElementById('scanToggleBtn');
 const submitBtn = document.getElementById('submitBtn');
@@ -7,7 +9,6 @@ const receiptCountDiv = document.getElementById('receiptCount');
 let scanner = null;
 let isScanning = false;
 
-// HTML Templates
 const CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2"><div class="card-body p-3"><pre class="mb-0"><code class="text-white small">{content}</code></pre></div></div>';
 const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div class="small">{content}</div></div></div>';
 const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div class="small">{content}</div></div></div>';
@@ -56,7 +57,6 @@ function formatEmployeeData(employee) {
 
 function formatItemsData(items) {
   if (!items || items.length === 0) return 'Нет товаров';
-
   return items.map(item => `<i class="bi bi-hash text-secondary"></i> <span class="text-secondary">ID:</span> ${item.id}<br>
 <i class="bi bi-cart-plus text-secondary"></i> <span class="text-secondary">Название:</span> ${item.name}<br>
 <i class="bi bi-cash-coin text-secondary"></i> <span class="text-secondary">Цена:</span> ${formatNumber(item.price)}₽<br>
@@ -67,75 +67,43 @@ function formatItemsData(items) {
 <i class="bi bi-box text-secondary"></i> <span class="text-secondary">Тип товара:</span> ${item.product}`).join('<br><br>');
 }
 
-function createCard(content) {
-  return CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createReceiptCard(content) {
-  return RECEIPT_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createRetailerCard(content) {
-  return RETAILER_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createShopCard(content) {
-  return SHOP_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createEmployeeCard(content) {
-  return EMPLOYEE_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createItemsCard(content) {
-  return ITEMS_CARD_TEMPLATE.replace('{content}', content);
-}
-
-function createError(message) {
-  return ERROR_TEMPLATE.replace('{message}', message);
-}
+function createCard(content) { return CARD_TEMPLATE.replace('{content}', content); }
+function createReceiptCard(content) { return RECEIPT_CARD_TEMPLATE.replace('{content}', content); }
+function createRetailerCard(content) { return RETAILER_CARD_TEMPLATE.replace('{content}', content); }
+function createShopCard(content) { return SHOP_CARD_TEMPLATE.replace('{content}', content); }
+function createEmployeeCard(content) { return EMPLOYEE_CARD_TEMPLATE.replace('{content}', content); }
+function createItemsCard(content) { return ITEMS_CARD_TEMPLATE.replace('{content}', content); }
+function createError(message) { return ERROR_TEMPLATE.replace('{message}', message); }
 
 function createBeautifulCards(data) {
   let html = '';
-
-  // Receipt
   if (data.receipt) {
     const receiptContent = formatReceiptData(data.receipt);
     html += createReceiptCard(receiptContent);
   }
-
-  // Items
   if (data.items && data.items.length > 0) {
     const itemsContent = formatItemsData(data.items);
     html += createItemsCard(itemsContent);
   }
-
-  // Retailer
   if (data.retailer) {
     const retailerContent = formatRetailerData(data.retailer);
     html += createRetailerCard(retailerContent);
   }
-
-  // Shop
   if (data.shop) {
     const shopContent = formatShopData(data.shop);
     html += createShopCard(shopContent);
   }
-
-  // Employee
   if (data.employee) {
     const employeeContent = formatEmployeeData(data.employee);
     html += createEmployeeCard(employeeContent);
   }
-
   return html;
 }
 
-function onScanSuccess(decodedText) {
+async function onScanSuccess(decodedText) {
   const manualInput = document.getElementById('manualInput');
   manualInput.value = decodedText;
-
-  stopScanner();
+  await stopScanner();
   processQRCode(decodedText);
 }
 
@@ -149,40 +117,37 @@ function processQRCode(qrCode) {
 
     fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     })
-      .then(res => {
-        if (!res.ok) {
-          return res.text().then(text => {
-            try {
-              const errorData = JSON.parse(text);
-              const detail = errorData.detail;
-              if (detail && typeof detail === 'string') {
-                throw new Error(detail);
-              } else {
-                throw new Error(text || `HTTP error! status: ${res.status}`);
-              }
-            } catch {
+    .then(res => {
+      if (!res.ok) {
+        return res.text().then(text => {
+          try {
+            const errorData = JSON.parse(text);
+            const detail = errorData.detail;
+            if (detail && typeof detail === 'string') {
+              throw new Error(detail);
+            } else {
               throw new Error(text || `HTTP error! status: ${res.status}`);
             }
-          });
-        }
-        return res.json();
-      })
-      .then(data => {
-        const beautifulCards = createBeautifulCards(data);
-        resultDiv.innerHTML = beautifulCards;
-
-        if (data.receipt) {
-          updateReceiptCount();
-        }
-      })
-      .catch(err => {
-        const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
-        resultDiv.innerHTML = errorHtml;
-      });
+          } catch {
+            throw new Error(text || `HTTP error! status: ${res.status}`);
+          }
+        });
+      }
+      return res.json();
+    })
+    .then(data => {
+      const beautifulCards = createBeautifulCards(data);
+      resultDiv.innerHTML = beautifulCards;
+      if (data.receipt) {
+        updateReceiptCount();
+      }
+    })
+    .catch(err => {
+      const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
+      resultDiv.innerHTML = errorHtml;
+    });
   } catch (error) {
     resultDiv.innerHTML = createError('Ошибка формата данных. Пожалуйста, проверьте ввод.');
   }
@@ -206,40 +171,37 @@ function onManualSubmit() {
 
     fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     })
-      .then(res => {
-        if (!res.ok) {
-          return res.text().then(text => {
-            try {
-              const errorData = JSON.parse(text);
-              const detail = errorData.detail;
-              if (detail && typeof detail === 'string') {
-                throw new Error(detail);
-              } else {
-                throw new Error(text || `HTTP error! status: ${res.status}`);
-              }
-            } catch {
+    .then(res => {
+      if (!res.ok) {
+        return res.text().then(text => {
+          try {
+            const errorData = JSON.parse(text);
+            const detail = errorData.detail;
+            if (detail && typeof detail === 'string') {
+              throw new Error(detail);
+            } else {
               throw new Error(text || `HTTP error! status: ${res.status}`);
             }
-          });
-        }
-        return res.json();
-      })
-      .then(data => {
-        const beautifulCards = createBeautifulCards(data);
-        resultDiv.innerHTML = beautifulCards;
-
-        if (data.receipt) {
-          updateReceiptCount();
-        }
-      })
-      .catch(err => {
-        const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
-        resultDiv.innerHTML = errorHtml;
-      });
+          } catch {
+            throw new Error(text || `HTTP error! status: ${res.status}`);
+          }
+        });
+      }
+      return res.json();
+    })
+    .then(data => {
+      const beautifulCards = createBeautifulCards(data);
+      resultDiv.innerHTML = beautifulCards;
+      if (data.receipt) {
+        updateReceiptCount();
+      }
+    })
+    .catch(err => {
+      const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
+      resultDiv.innerHTML = errorHtml;
+    });
   } catch (error) {
     resultDiv.innerHTML = createError('Ошибка формата данных. Пожалуйста, проверьте ввод.');
   }
@@ -247,7 +209,7 @@ function onManualSubmit() {
 
 async function toggleScanner() {
   if (isScanning) {
-    stopScanner();
+    await stopScanner();
   } else {
     await startScanner();
   }
@@ -255,46 +217,82 @@ async function toggleScanner() {
 
 async function startScanner() {
   try {
-    scanner = new Html5Qrcode(reader.id);
-    const config = {
-      fps: 20,
-      videoConstraints: {
-        facingMode: "environment",
-        zoom: 1.31,
+    if (scanner) {
+      await stopScanner();
+    }
+
+    const video = document.createElement('video');
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'cover';
+    reader.innerHTML = '';
+    reader.appendChild(video);
+
+    scanner = new QrScanner(
+      video,
+      result => {
+        onScanSuccess(result.data);
       },
-      scale: 2,
-    };
-    await scanner.start(
-      { facingMode: "environment" },
-      config,
-      onScanSuccess,
-      (err) => { }
+      {
+        highlightScanRegion: false,
+        highlightCodeOutline: false,
+      }
     );
+
+    await scanner.start();
     isScanning = true;
     scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
     scanToggleBtn.classList.remove('btn-primary');
     scanToggleBtn.classList.add('btn-danger');
+
   } catch (err) {
     resultDiv.innerHTML = createError(err.message || err.toString());
   }
 }
 
 function stopScanner() {
-  if (scanner) {
-    const scannerRef = scanner;
-    scannerRef.stop()
-      .then(() => {
-        return scannerRef.clear();
-      })
-      .catch((err) => {
-        console.error('Error stopping scanner:', err);
-      });
-    scanner = null;
-  }
-  isScanning = false;
-  scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
-  scanToggleBtn.classList.remove('btn-danger');
-  scanToggleBtn.classList.add('btn-primary');
+  return new Promise((resolve) => {
+    if (scanner) {
+      const s = scanner;
+      scanner = null;
+      const video = reader.querySelector('video');
+
+      let stopped = false;
+      const tryStop = (methodName) => {
+        if (typeof s[methodName] === 'function') {
+          try {
+            const result = s[methodName]();
+            if (result && typeof result.then === 'function') {
+              result
+                .then(() => {
+                  if (video && video.parentNode) video.remove();
+                  resolve();
+                })
+                .catch(() => {
+                  if (video && video.parentNode) video.remove();
+                  resolve();
+                });
+              return true;
+            }
+          } catch(e) {}
+        }
+        return false;
+      };
+
+      if (tryStop('stop')) return;
+      if (tryStop('destroy')) return;
+
+      if (video && video.parentNode) video.remove();
+      resolve();
+    } else {
+      resolve();
+    }
+  }).then(() => {
+    isScanning = false;
+    scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
+    scanToggleBtn.classList.remove('btn-danger');
+    scanToggleBtn.classList.add('btn-primary');
+  });
 }
 
 async function updateReceiptCount() {
@@ -309,7 +307,6 @@ async function updateReceiptCount() {
 }
 
 updateReceiptCount();
-
 scanToggleBtn.addEventListener('click', toggleScanner);
 submitBtn.addEventListener('click', onManualSubmit);
 window.addEventListener('beforeunload', stopScanner);
