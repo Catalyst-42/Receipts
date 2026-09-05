@@ -8,6 +8,9 @@ from alembic import context
 from src.config import settings
 from src.core.db import Base
 
+# Users
+import src.users.model  # noqa: F401
+
 # CRPT
 import src.crpt.models  # noqa: F401
 

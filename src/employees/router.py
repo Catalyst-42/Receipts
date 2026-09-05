@@ -8,6 +8,8 @@ from src.core.db import get_db
 from src.core.schemes import Count, ErrorResponse
 from src.employees.schemes import Employee, EmployeeId
 from src.employees.service import EmployeesService
+from src.users.dependencies import get_user
+from src.users.schemes import User
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -36,8 +38,9 @@ async def get_employees_count(
 )
 async def get_employee(
     request: Annotated[EmployeeId, Path()],
+    user: User = Depends(get_user),
     employees_service: EmployeesService = Depends(get_employees_service),
 ) -> Employee:
     """Returns employee by its unique"""
-    result = await employees_service.get_by_id(request.employee_id)
+    result = await employees_service.get_by_id(user, request.employee_id)
     return result

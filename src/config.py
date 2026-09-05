@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     ssl_keyfile: Optional[str] = None
     ssl_certfile: Optional[str] = None
 
+    # Session
+    jwt_algorithm: str
+    jwt_secret_key: str
+    jwt_access_token_expire_days: int
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

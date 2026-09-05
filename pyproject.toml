@@ -24,6 +24,10 @@ opencv-python = "^4.10.0"
 pyzbar = "^0.1.9"
 python-dotenv = "^1.0.0"
 httpx = "^0.28.1"
+passlib = "^1.7.4"
+itsdangerous = "^2.2.0"
+bcrypt = "^5.0.0"
+python-jose = {extras = ["cryptography"], version = "^3.5.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Sequence
 
 from pydantic import UUID7
-from sqlalchemy import func, select
+from sqlalchemy import func, select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.receipts.model import ReceiptsOrm
@@ -87,3 +87,16 @@ class ReceiptsDao:
         self.db.add(result)
         await self.db.flush()
         return result
+
+    async def exists_by_employee_and_user(
+        self, user_id: UUID7, employee_id: UUID7
+    ) -> bool:
+        stmt = select(
+            exists().where(
+                ReceiptsOrm.owner_id == user_id,
+                ReceiptsOrm.employee_id == employee_id,
+            )
+        )
+
+        result = await self.db.execute(stmt)
+        return result.scalar()

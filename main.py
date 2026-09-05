@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 from src.config import settings
 from src.core.middleware import ProcessTimeMiddleware
 from src.core.router import router as core_router
 from src.crpt.router import router as crpt_router
+from src.crpt.admin_router import router as crpt_admin_router
 from src.employees.router import router as employees_router
 from src.items.router import router as items_router
 from src.measures.router import router as measures_router
@@ -17,10 +19,11 @@ from src.receipts.router import router as receipts_router
 from src.registry.router import router as registry_router
 from src.retailers.router import router as retailers_router
 from src.shops.router import router as shops_router
+from src.users.router import router as users_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
-# CORS
+# Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,6 +31,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.add_middleware(
     ProcessTimeMiddleware,
 )
@@ -40,9 +44,13 @@ if settings.ssl_keyfile and settings.ssl_certfile:
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(core_router)
 
+# Users
+app.include_router(users_router)
+
 # Core
 app.include_router(registry_router)
 app.include_router(crpt_router)
+app.include_router(crpt_admin_router)
 
 # Receipts
 app.include_router(receipts_router)

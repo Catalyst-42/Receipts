@@ -3,18 +3,13 @@ from typing import Annotated
 from fastapi import Depends, Path
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.db import get_db
 from src.core.schemes import Count, ErrorResponse
+from src.crpt.dependencies import get_crpt_service
 from src.crpt.schemes import Crpt, CrptId
 from src.crpt.service import CrptService
 
 router = APIRouter(prefix="/crpt", tags=["CRPT"])
-
-
-def get_crpt_service(db: AsyncSession = Depends(get_db)):
-    return CrptService(db)
 
 
 @router.get(

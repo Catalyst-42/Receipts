@@ -52,6 +52,5 @@ class CrptDao:
 
     async def delete(self, crpt: CrptOrm) -> CrptOrm:
         await self.db.delete(crpt)
-
         await self.db.flush()
         return crpt

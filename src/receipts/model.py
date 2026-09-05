@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from src.items.model import ItemsOrm
     from src.retailers.model import RetailersOrm
     from src.shops.model import ShopsOrm
+    from src.users.model import UsersOrm
 
 
 class ReceiptsOrm(Base):
@@ -37,6 +38,13 @@ class ReceiptsOrm(Base):
         unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
+    )
+    owner_id: Mapped[UUID7] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users_orm.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+        comment="Reference to a user that owns this receipt registry",
     )
     crpt_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
@@ -101,6 +109,11 @@ class ReceiptsOrm(Base):
     )
 
     # Relations
+    owner: Mapped["UsersOrm"] = relationship(
+        "UsersOrm",
+        back_populates="receipts",
+        lazy="selectin",
+    )
     crpt: Mapped["CrptOrm"] = relationship(
         "CrptOrm",
         back_populates="receipt",
