@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
 from pydantic import UUID7
-from sqlalchemy import func, select
+from sqlalchemy import func, select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crpt.models import CrptOrm
@@ -54,3 +54,10 @@ class CrptDao:
         await self.db.delete(crpt)
         await self.db.flush()
         return crpt
+
+    async def exists_by_user(self, user_id: UUID7, crpt_id: UUID7) -> bool:
+        stmt = select(
+            exists().where(
+                CrptOrm.id
+            )
+        )

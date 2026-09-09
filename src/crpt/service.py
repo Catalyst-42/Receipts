@@ -12,7 +12,7 @@ from src.crpt.dao import CrptDao
 from src.crpt.schemes import Crpt, CrptList
 from src.receipts.schemes import FiscalFields
 from src.core.schemes import Count
-
+from src.users.schemes import User
 
 class CrptService:
     def __init__(self, db: AsyncSession):
@@ -23,7 +23,7 @@ class CrptService:
         result = await self.crpt_dao.get_all()
         return CrptList(items=[Crpt.model_validate(item) for item in result])
 
-    async def get_by_id(self, crpt_id: UUID7) -> Crpt:
+    async def get_by_id(self, user: User, crpt_id: UUID7) -> Crpt:
         result = await self.crpt_dao.get_by_id(crpt_id)
         if not result:
             raise HTTPException(
