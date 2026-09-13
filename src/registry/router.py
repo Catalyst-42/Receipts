@@ -9,6 +9,8 @@ from src.core.schemes import ErrorResponse
 from src.receipts.schemes import FiscalFields, ReceiptId
 from src.registry.schemes import Registry
 from src.registry.service import RegistryService
+from src.users.schemes import User
+from src.users.dependencies import get_user
 
 router = APIRouter(prefix="/registry", tags=["Registry"])
 
@@ -26,10 +28,11 @@ def get_registry_service(db: AsyncSession = Depends(get_db)):
 )
 async def create_registry(
     request: Annotated[FiscalFields, Query()],
+    user: User = Depends(get_user),
     service: RegistryService = Depends(get_registry_service),
 ) -> Registry:
     """Registers receipt in project database"""
-    return await service.create(request)
+    return await service.create(user.id, request)
 
 
 @router.delete(
@@ -41,10 +44,11 @@ async def create_registry(
 )
 async def delete_registry(
     request: Annotated[FiscalFields, Query()],
+    user: User = Depends(get_user),
     service: RegistryService = Depends(get_registry_service),
 ) -> Registry:
     """Deletes records of a registry"""
-    return await service.delete(request)
+    return await service.delete(user, request)
 
 
 @router.get(

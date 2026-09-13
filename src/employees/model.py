@@ -31,8 +31,6 @@ class EmployeesOrm(Base):
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the employee",
     )
@@ -43,7 +41,7 @@ class EmployeesOrm(Base):
         index=True,
         comment="Foreign key to retailers table",
     )
-    shop_id: Mapped[UUID7] = mapped_column(
+    shop_id: Mapped[UUID7 | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("shops_orm.id", ondelete="CASCADE"),
         nullable=True,

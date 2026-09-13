@@ -11,8 +11,6 @@ class PaymentsOrm(Base):
     id: Mapped[int] = mapped_column(
         SmallInteger,
         primary_key=True,
-        index=True,
-        unique=True,
         comment="Unique identifier of the payment type",
     )
     description: Mapped[str] = mapped_column(

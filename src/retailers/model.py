@@ -19,8 +19,6 @@ class RetailersOrm(Base):
     id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the retailer",
     )

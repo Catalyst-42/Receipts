@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import warnings
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from pyzbar import pyzbar
 warnings.filterwarnings("ignore")
 
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tiff"}
+QR_PATTERN = re.compile(r't=.+&s=.+&fn=.+&i=.+&fp=.+&n=.+')
 
 
 def qr_code(image_path: str) -> str:
@@ -21,15 +23,17 @@ def qr_code(image_path: str) -> str:
     return barcodes[0].data.decode("utf-8") if barcodes else ""
 
 
-def send_request(qr_code_str: str, api_base_url: str) -> bool:
+def send_request(qr_code_str: str, api_base_url: str, token: str) -> bool:
     if not qr_code_str:
         return False
-    response = requests.post(f"{api_base_url}/registry/by-fiscal-fields?{qr_code_str}", verify=False)
+    response = requests.post(f"{api_base_url}/registry/by-fiscal-fields?{qr_code_str}", verify=False, headers={
+        "Authorization": f"Bearer {token}"
+    })
     response.raise_for_status()
     return response.status_code == 200
 
 
-async def main(path: str, api_base_url: str) -> None:
+async def main(path: str, api_base_url: str, token: str) -> None:
     root = Path(path)
     qr_codes = []
 
@@ -54,6 +58,13 @@ async def main(path: str, api_base_url: str) -> None:
                 data = json.load(f)
             if isinstance(data, dict):
                 qr_codes.extend(data.get("qr_codes", []))
+        elif ext == ".txt":
+            with open(file, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                if line and QR_PATTERN.match(line):
+                    qr_codes.append(line)
 
     if not qr_codes:
         print("No QR codes found")
@@ -63,7 +74,7 @@ async def main(path: str, api_base_url: str) -> None:
     total = len(qr_codes)
     for i, code in enumerate(qr_codes, 1):
         print(f"\r{i}/{total}", end=" ", flush=True)
-        if send_request(code, api_base_url):
+        if send_request(code, api_base_url, token):
             successful += 1
 
     print(f"\rDone with {successful} successful of {total}")
@@ -73,13 +84,18 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Process QR codes from images and JSON files (recursively)"
+        description="Process QR codes from images, JSON files, and TXT files (recursively)"
     )
-    parser.add_argument("path", help="Directory or file (image or JSON)")
+    parser.add_argument("path", help="Directory or file (image, JSON, or TXT)")
     parser.add_argument(
         "--api-url",
         default="https://localhost:8800",
         help="Receipts API base URL (default: https://localhost:8800)",
     )
+    parser.add_argument(
+        "--token",
+        required=True,
+        help="Authorization token for API access",
+    )
     args = parser.parse_args()
-    asyncio.run(main(args.path, args.api_url))
+    asyncio.run(main(args.path, args.api_url, args.token))

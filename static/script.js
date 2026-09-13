@@ -1,23 +1,206 @@
 import QrScanner from 'qr-scanner';
 
+// DOM references
 const reader = document.getElementById('reader');
-const scanToggleBtn = document.getElementById('scanToggleBtn');
-const submitBtn = document.getElementById('submitBtn');
+const manualPanel = document.getElementById('manualPanel');
+const actionBtn = document.getElementById('actionBtn');
+const modeToggleBtn = document.getElementById('modeToggleBtn');
+const modeToggleIcon = document.getElementById('modeToggleIcon');
+const manualInput = document.getElementById('manualInput');
 const resultDiv = document.getElementById('result');
 const receiptCountDiv = document.getElementById('receiptCount');
 
+// Manual fields
+const fieldT = document.getElementById('fieldT');
+const fieldS = document.getElementById('fieldS');
+const fieldFn = document.getElementById('fieldFn');
+const fieldI = document.getElementById('fieldI');
+const fieldFp = document.getElementById('fieldFp');
+const fieldN = document.getElementById('fieldN');
+
+// Auth bar
+const authUsernameSpan = document.getElementById('authUsername');
+const authAdminBadge = document.getElementById('authAdminBadge');
+const authActionBtn = document.getElementById('authActionBtn');
+
+// Auth modal
+const authForm = document.getElementById('authForm');
+const authUsernameInput = document.getElementById('authUsernameInput');
+const authPassword = document.getElementById('authPassword');
+const authUsernameFeedback = document.getElementById('authUsernameFeedback');
+const authUsernameSuccess = document.getElementById('authUsernameSuccess');
+const authPasswordFeedback = document.getElementById('authPasswordFeedback');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authModeLoginTab = document.getElementById('authModeLoginTab');
+const authModeRegisterTab = document.getElementById('authModeRegisterTab');
+
 let scanner = null;
 let isScanning = false;
+let isBusy = false;
+let currentMode = 'camera'; // 'camera' | 'manual'
+let authToken = localStorage.getItem('authToken');
+let authMode = 'login';
 
-const CARD_TEMPLATE = '<div class="card bg-dark text-white mt-2"><div class="card-body p-3"><pre class="mb-0"><code class="text-white small">{content}</code></pre></div></div>';
-const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div class="small">{content}</div></div></div>';
-const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div class="small">{content}</div></div></div>';
-const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div class="small">{content}</div></div></div>';
-const EMPLOYEE_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Сотрудник</h6><div class="small">{content}</div></div></div>';
-const ITEMS_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Товары</h6><div class="small">{content}</div></div></div>';
+// Templates
+const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div>{content}</div></div></div>';
+const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div>{content}</div></div></div>';
+const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div>{content}</div></div></div>';
+const EMPLOYEE_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Сотрудник</h6><div>{content}</div></div></div>';
+const ITEMS_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Товары</h6><div>{content}</div></div></div>';
 const LOADING_TEMPLATE = '<div class="text-secondary mt-3"><div class="progress" style="height: 4px;"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div></div></div>';
-const ERROR_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger">{message}</div></div></div>';
+const ERROR_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="text-danger">{message}</div></div></div>';
 
+// Field validation helpers
+function setFieldError(inputEl, feedbackEl, message) {
+  inputEl.classList.add('is-invalid');
+  inputEl.classList.remove('is-valid');
+  feedbackEl.textContent = message;
+}
+
+function setFieldSuccess(inputEl, feedbackEl, message) {
+  inputEl.classList.add('is-valid');
+  inputEl.classList.remove('is-invalid');
+  feedbackEl.textContent = message;
+}
+
+function clearFieldState(inputEl) {
+  inputEl.classList.remove('is-invalid', 'is-valid');
+}
+
+function clearAuthFormState() {
+  clearFieldState(authUsernameInput);
+  clearFieldState(authPassword);
+  authUsernameFeedback.textContent = '';
+  authUsernameSuccess.textContent = '';
+  authPasswordFeedback.textContent = '';
+}
+
+// Busy state
+function setBusy(busy) {
+  isBusy = busy;
+  actionBtn.disabled = busy;
+  modeToggleBtn.disabled = busy;
+  manualInput.disabled = busy;
+  [fieldT, fieldS, fieldN, fieldFn, fieldI, fieldFp].forEach(field => {
+    if (field) field.disabled = busy;
+  });
+  updateActionButton();
+}
+
+function updateActionButton() {
+  // Action selector
+  if (currentMode === 'camera') {
+    modeToggleIcon.className = 'bi bi-pencil';
+    modeToggleBtn.title = 'Переключить на ручной ввод';
+  } else {
+    modeToggleIcon.className = 'bi bi-camera';
+    modeToggleBtn.title = 'Переключить на камеру';
+  }
+
+  // Action buttom
+  if (currentMode === 'camera') {
+    if (isScanning) {
+      actionBtn.textContent = 'Стоп';
+      actionBtn.classList.remove('btn-primary');
+      actionBtn.classList.add('btn-danger');
+    } else {
+      actionBtn.textContent = 'Старт';
+      actionBtn.classList.remove('btn-danger');
+      actionBtn.classList.add('btn-primary');
+    }
+  } else {
+    actionBtn.textContent = 'Проверить';
+    actionBtn.classList.remove('btn-danger');
+    actionBtn.classList.add('btn-primary');
+  }
+}
+
+// Auth tabs
+function setAuthMode(mode) {
+  authMode = mode;
+  clearAuthFormState();
+
+  if (mode === 'login') {
+    authModeLoginTab.classList.add('active');
+    authModeRegisterTab.classList.remove('active');
+    authSubmitBtn.textContent = 'Войти';
+  } else {
+    authModeRegisterTab.classList.add('active');
+    authModeLoginTab.classList.remove('active');
+    authSubmitBtn.textContent = 'Зарегистрироваться';
+  }
+}
+
+authModeLoginTab.addEventListener('click', () => setAuthMode('login'));
+authModeRegisterTab.addEventListener('click', () => setAuthMode('register'));
+
+// Auth API
+async function login(username, password) {
+  const response = await fetch('./auth/login', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  if (!response.ok) throw new Error('Неверное имя пользователя или пароль');
+  const data = await response.json();
+  authToken = data.access_token;
+  localStorage.setItem('authToken', authToken);
+  updateAuthUI();
+}
+
+async function register(username, password) {
+  const response = await fetch('./auth/register', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  if (!response.ok) throw new Error('Ошибка регистрации');
+}
+
+function logout() {
+  authToken = null;
+  localStorage.removeItem('authToken');
+  updateAuthUI();
+}
+
+async function getCurrentUser() {
+  if (!authToken) return null;
+  try {
+    const response = await fetch('./auth/me', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch current user');
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
+
+function getAuthHeaders() {
+  return authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+}
+
+function updateAuthUI() {
+  if (authToken) {
+    authActionBtn.textContent = 'Выйти';
+    authActionBtn.classList.remove('btn-primary');
+    authActionBtn.classList.add('btn-danger');
+
+    getCurrentUser().then(user => {
+      authUsernameSpan.textContent = user ? user.username : 'Пользователь';
+      authAdminBadge.style.display = user && user.is_admin ? 'inline' : 'none';
+    });
+  } else {
+    authUsernameSpan.textContent = 'Гость';
+    authAdminBadge.style.display = 'none';
+    authActionBtn.textContent = 'Войти';
+    authActionBtn.classList.remove('btn-danger');
+    authActionBtn.classList.add('btn-primary');
+  }
+  updateReceiptCount();
+}
+
+// Formatting helpers
 function formatNumber(num) {
   const str = num.toString();
   if (str.endsWith('.00')) {
@@ -67,7 +250,7 @@ function formatItemsData(items) {
 <i class="bi bi-box text-secondary"></i> <span class="text-secondary">Тип товара:</span> ${item.product}`).join('<br><br>');
 }
 
-function createCard(content) { return CARD_TEMPLATE.replace('{content}', content); }
+// Card builders
 function createReceiptCard(content) { return RECEIPT_CARD_TEMPLATE.replace('{content}', content); }
 function createRetailerCard(content) { return RETAILER_CARD_TEMPLATE.replace('{content}', content); }
 function createShopCard(content) { return SHOP_CARD_TEMPLATE.replace('{content}', content); }
@@ -77,149 +260,127 @@ function createError(message) { return ERROR_TEMPLATE.replace('{message}', messa
 
 function createBeautifulCards(data) {
   let html = '';
-  if (data.receipt) {
-    const receiptContent = formatReceiptData(data.receipt);
-    html += createReceiptCard(receiptContent);
-  }
-  if (data.items && data.items.length > 0) {
-    const itemsContent = formatItemsData(data.items);
-    html += createItemsCard(itemsContent);
-  }
-  if (data.retailer) {
-    const retailerContent = formatRetailerData(data.retailer);
-    html += createRetailerCard(retailerContent);
-  }
-  if (data.shop) {
-    const shopContent = formatShopData(data.shop);
-    html += createShopCard(shopContent);
-  }
-  if (data.employee) {
-    const employeeContent = formatEmployeeData(data.employee);
-    html += createEmployeeCard(employeeContent);
-  }
+  if (data.receipt) html += createReceiptCard(formatReceiptData(data.receipt));
+  if (data.items && data.items.length > 0) html += createItemsCard(formatItemsData(data.items));
+  if (data.retailer) html += createRetailerCard(formatRetailerData(data.retailer));
+  if (data.shop) html += createShopCard(formatShopData(data.shop));
+  if (data.employee) html += createEmployeeCard(formatEmployeeData(data.employee));
   return html;
 }
 
+// QR scanner
 async function onScanSuccess(decodedText) {
-  const manualInput = document.getElementById('manualInput');
+  if (isBusy) return;
   manualInput.value = decodedText;
   await stopScanner();
-  processQRCode(decodedText);
+  await fetchReceiptData(decodedText);
 }
 
-function processQRCode(qrCode) {
-  const loadingHtml = LOADING_TEMPLATE;
-  resultDiv.innerHTML = loadingHtml;
+async function fetchReceiptData(qrCode) {
+  setBusy(true);
+  resultDiv.innerHTML = LOADING_TEMPLATE;
 
   try {
     const params = new URLSearchParams(qrCode);
     const url = `./registry/by-fiscal-fields?${params.toString()}`;
 
-    fetch(url, {
+    const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .then(res => {
-      if (!res.ok) {
-        return res.text().then(text => {
-          try {
-            const errorData = JSON.parse(text);
-            const detail = errorData.detail;
-            if (detail && typeof detail === 'string') {
-              throw new Error(detail);
-            } else {
-              throw new Error(text || `HTTP error! status: ${res.status}`);
-            }
-          } catch {
-            throw new Error(text || `HTTP error! status: ${res.status}`);
-          }
-        });
-      }
-      return res.json();
-    })
-    .then(data => {
-      const beautifulCards = createBeautifulCards(data);
-      resultDiv.innerHTML = beautifulCards;
-      if (data.receipt) {
-        updateReceiptCount();
-      }
-    })
-    .catch(err => {
-      const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
-      resultDiv.innerHTML = errorHtml;
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     });
-  } catch (error) {
-    resultDiv.innerHTML = createError('Ошибка формата данных. Пожалуйста, проверьте ввод.');
+
+    if (!res.ok) {
+      const text = await res.text();
+      let message = text || `HTTP error! status: ${res.status}`;
+      try {
+        const errorData = JSON.parse(text);
+        if (errorData.detail && typeof errorData.detail === 'string') message = errorData.detail;
+      } catch { /* not JSON */ }
+      throw new Error(message);
+    }
+
+    const data = await res.json();
+    resultDiv.innerHTML = createBeautifulCards(data);
+    if (data.receipt) await updateReceiptCount();
+  } catch (err) {
+    resultDiv.innerHTML = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
+  } finally {
+    setBusy(false);
+  }
+}
+
+// Converts "YYYY-MM-DDTHH:mm" to "YYYYMMDDTHHmm"
+function formatTimestampField(value) {
+  if (!value) return '';
+  return value.replace(/[-:]/g, '');
+}
+
+// QR Builder
+function rebuildManualInputFromFields() {
+  const params = new URLSearchParams();
+
+  const t = formatTimestampField(fieldT.value.trim());
+  if (t) params.set('t', t);
+
+  if (fieldS.value.trim() !== '') params.set('s', fieldS.value.trim());
+  if (fieldFn.value.trim() !== '') params.set('fn', fieldFn.value.trim());
+  if (fieldI.value.trim() !== '') params.set('i', fieldI.value.trim());
+  if (fieldFp.value.trim() !== '') params.set('fp', fieldFp.value.trim());
+  if (fieldN.value.trim() !== '') params.set('n', fieldN.value.trim());
+
+  manualInput.value = params.toString();
+}
+
+[fieldT, fieldS, fieldFn, fieldI, fieldFp, fieldN].forEach(field => {
+  field.addEventListener('input', rebuildManualInputFromFields);
+});
+
+function toggleMode() {
+  if (isBusy) return;
+
+  if (currentMode === 'camera') {
+    currentMode = 'manual';
+    reader.classList.add('d-none');
+    manualPanel.classList.remove('d-none');
+    updateActionButton();
+    if (isScanning) stopScanner();
+  } else {
+    currentMode = 'camera';
+    manualPanel.classList.add('d-none');
+    reader.classList.remove('d-none');
+    updateActionButton();
+  }
+}
+
+function onActionClick() {
+  if (isBusy) return;
+
+  if (currentMode === 'camera') {
+    if (isScanning) {
+      stopScanner();
+    } else {
+      startScanner();
+    }
+  } else {
+    onManualSubmit();
   }
 }
 
 function onManualSubmit() {
-  const manualInput = document.getElementById('manualInput');
+  if (isBusy) return;
   const inputValue = manualInput.value.trim();
-
   if (!inputValue) {
     resultDiv.innerHTML = createError('Пожалуйста, введите данные чека');
     return;
   }
-
-  const loadingHtml = LOADING_TEMPLATE;
-  resultDiv.innerHTML = loadingHtml;
-
-  try {
-    const params = new URLSearchParams(inputValue);
-    const url = `./registry/by-fiscal-fields?${params.toString()}`;
-
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .then(res => {
-      if (!res.ok) {
-        return res.text().then(text => {
-          try {
-            const errorData = JSON.parse(text);
-            const detail = errorData.detail;
-            if (detail && typeof detail === 'string') {
-              throw new Error(detail);
-            } else {
-              throw new Error(text || `HTTP error! status: ${res.status}`);
-            }
-          } catch {
-            throw new Error(text || `HTTP error! status: ${res.status}`);
-          }
-        });
-      }
-      return res.json();
-    })
-    .then(data => {
-      const beautifulCards = createBeautifulCards(data);
-      resultDiv.innerHTML = beautifulCards;
-      if (data.receipt) {
-        updateReceiptCount();
-      }
-    })
-    .catch(err => {
-      const errorHtml = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="small text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
-      resultDiv.innerHTML = errorHtml;
-    });
-  } catch (error) {
-    resultDiv.innerHTML = createError('Ошибка формата данных. Пожалуйста, проверьте ввод.');
-  }
-}
-
-async function toggleScanner() {
-  if (isScanning) {
-    await stopScanner();
-  } else {
-    await startScanner();
-  }
+  fetchReceiptData(inputValue);
 }
 
 async function startScanner() {
+  setBusy(true);
+
   try {
-    if (scanner) {
-      await stopScanner();
-    }
+    if (scanner) await stopScannerInternal();
 
     const video = document.createElement('video');
     video.style.width = '100%';
@@ -230,51 +391,44 @@ async function startScanner() {
 
     scanner = new QrScanner(
       video,
-      result => {
-        onScanSuccess(result.data);
-      },
-      {
-        highlightScanRegion: false,
-        highlightCodeOutline: false,
-      }
+      result => { onScanSuccess(result.data); },
+      { highlightScanRegion: false, highlightCodeOutline: false }
     );
 
     await scanner.start();
     isScanning = true;
-    scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
-    scanToggleBtn.classList.remove('btn-primary');
-    scanToggleBtn.classList.add('btn-danger');
-
   } catch (err) {
     resultDiv.innerHTML = createError(err.message || err.toString());
+  } finally {
+    setBusy(false);
   }
 }
 
-function stopScanner() {
+async function stopScanner() {
+  setBusy(true);
+  await stopScannerInternal();
+  setBusy(false);
+}
+
+// Internal cleanup, doesn't touch busy state
+function stopScannerInternal() {
   return new Promise((resolve) => {
     if (scanner) {
       const s = scanner;
       scanner = null;
       const video = reader.querySelector('video');
 
-      let stopped = false;
       const tryStop = (methodName) => {
         if (typeof s[methodName] === 'function') {
           try {
             const result = s[methodName]();
             if (result && typeof result.then === 'function') {
               result
-                .then(() => {
-                  if (video && video.parentNode) video.remove();
-                  resolve();
-                })
-                .catch(() => {
-                  if (video && video.parentNode) video.remove();
-                  resolve();
-                });
+                .then(() => { if (video && video.parentNode) video.remove(); resolve(); })
+                .catch(() => { if (video && video.parentNode) video.remove(); resolve(); });
               return true;
             }
-          } catch(e) {}
+          } catch (e) { }
         }
         return false;
       };
@@ -289,15 +443,13 @@ function stopScanner() {
     }
   }).then(() => {
     isScanning = false;
-    scanToggleBtn.innerHTML = '<i class="bi bi-camera"></i>';
-    scanToggleBtn.classList.remove('btn-danger');
-    scanToggleBtn.classList.add('btn-primary');
+    updateActionButton();
   });
 }
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('./receipts/stats/count');
+    const response = await fetch('./receipts/stats/count', { headers: getAuthHeaders() });
     const data = await response.json();
     receiptCountDiv.textContent = data.total;
   } catch (error) {
@@ -306,7 +458,48 @@ async function updateReceiptCount() {
   }
 }
 
-updateReceiptCount();
-scanToggleBtn.addEventListener('click', toggleScanner);
-submitBtn.addEventListener('click', onManualSubmit);
-window.addEventListener('beforeunload', stopScanner);
+// Event listeners
+modeToggleBtn.addEventListener('click', toggleMode);
+actionBtn.addEventListener('click', onActionClick);
+window.addEventListener('beforeunload', () => stopScannerInternal());
+
+// Auth form submit
+authForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearAuthFormState();
+
+  if (authMode === 'login') {
+    try {
+      await login(authUsernameInput.value, authPassword.value);
+      const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
+      modal.hide();
+      authForm.reset();
+      clearAuthFormState();
+    } catch (error) {
+      setFieldError(authPassword, authPasswordFeedback, error.message);
+    }
+  } else {
+    try {
+      await register(authUsernameInput.value, authPassword.value);
+      setFieldSuccess(authUsernameInput, authUsernameSuccess, 'Регистрация успешна, теперь можно войти');
+      setAuthMode('login');
+    } catch (error) {
+      setFieldError(authUsernameInput, authUsernameFeedback, error.message);
+    }
+  }
+});
+
+authActionBtn.addEventListener('click', () => {
+  if (authToken) {
+    logout();
+  } else {
+    setAuthMode('login');
+    authForm.reset();
+    const modal = new bootstrap.Modal(document.getElementById('authModal'));
+    modal.show();
+  }
+});
+
+// Initial render
+updateAuthUI();
+updateActionButton();

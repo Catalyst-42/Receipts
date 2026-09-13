@@ -38,9 +38,8 @@ async def get_employees_count(
 )
 async def get_employee(
     request: Annotated[EmployeeId, Path()],
-    user: User = Depends(get_user),
     employees_service: EmployeesService = Depends(get_employees_service),
 ) -> Employee:
     """Returns employee by its unique"""
-    result = await employees_service.get_by_id(user, request.employee_id)
+    result = await employees_service.get_by_id(request.employee_id)
     return result

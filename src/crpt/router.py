@@ -34,9 +34,8 @@ async def get_crpt_count(
 )
 async def get_crpt(
     request: Annotated[CrptId, Path()],
-    user: User = Depends(get_user),
     crpt_service: CrptService = Depends(get_crpt_service),
 ) -> Crpt:
     """Returns crpt record by its unique id"""
-    result = await crpt_service.get_by_id(user, request.crpt_id)
+    result = await crpt_service.get_by_id(request.crpt_id)
     return result

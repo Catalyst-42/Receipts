@@ -3,6 +3,7 @@ from decimal import Decimal
 from re import IGNORECASE, sub
 
 from fastapi import HTTPException, status
+from src.users.schemes import User
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -144,7 +145,7 @@ class RegistryService:
         )
 
     @transactional
-    async def create(self, fiscal_fields: FiscalFields) -> Registry:
+    async def create(self, user_id: UUID7, fiscal_fields: FiscalFields) -> Registry:
         receipt = await self.receipts_service.receipts_dao.get_by_fiscal_fields(
             fiscal_fields.t_datetime,
             fiscal_fields.s,
@@ -213,6 +214,7 @@ class RegistryService:
 
         fiscal_fields = FiscalFields(t=t, s=s, fn=fn, i=i, fp=fp, n=n)
         receipt = await self.receipts_service.create(
+            owner_id=user_id,
             crpt_id=crpt.id,
             retailer_id=retailer.id,
             shop_id=shop.id if shop else None,
@@ -255,7 +257,7 @@ class RegistryService:
         )
 
     @transactional
-    async def delete(self, fiscal_fields: FiscalFields) -> Registry:
+    async def delete(self, user: User, fiscal_fields: FiscalFields) -> Registry:
         crpt = await self.crpt_service.crpt_dao.get_by_qr_code(fiscal_fields.qr_code)
         if not crpt:
             raise HTTPException(
@@ -274,6 +276,12 @@ class RegistryService:
         retailer = receipt.retailer
         shop = receipt.shop
         employee = receipt.employee
+
+        if receipt.owner_id != user.id and not user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have not rights to delete this record",
+            )
 
         # Skips orphan retailers, shops and employees on deletion
         crpt = await self.crpt_service.crpt_dao.delete(crpt)

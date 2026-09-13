@@ -11,8 +11,6 @@ class NdsOrm(Base):
     id: Mapped[int] = mapped_column(
         SmallInteger,
         primary_key=True,
-        index=True,
-        unique=True,
         comment="Unique identifier of the NDS (VAT)",
     )
     rate_name: Mapped[str] = mapped_column(

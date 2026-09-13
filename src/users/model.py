@@ -17,15 +17,12 @@ class UsersOrm(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid7,
-        index=True,
-        unique=True,
         comment="Unique identifier of a user",
     )
     username: Mapped[str] = mapped_column(
         String(16),
         unique=True,
         nullable=False,
-        index=True,
         comment="Unique user name",
     )
     hashed_password: Mapped[str] = mapped_column(
@@ -35,9 +32,8 @@ class UsersOrm(Base):
     )
     is_admin: Mapped[bool] = mapped_column(
         Boolean,
-        default=False,
         nullable=False,
-        index=True,
+        default=False,
         comment="Flag if user have additional privilegies",
     )
 

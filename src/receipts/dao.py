@@ -60,6 +60,7 @@ class ReceiptsDao:
 
     async def create(
         self,
+        owner_id: UUID7,
         crpt_id: UUID7,
         retailer_id: UUID7,
         shop_id: UUID7 | None,
@@ -72,6 +73,7 @@ class ReceiptsDao:
         n: int,
     ) -> ReceiptsOrm:
         result = ReceiptsOrm(
+            owner_id=owner_id,
             crpt_id=crpt_id,
             retailer_id=retailer_id,
             shop_id=shop_id,

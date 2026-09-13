@@ -1,8 +1,8 @@
-"""Init
+"""Receipts v3
 
-Revision ID: cc305ff35f74
+Revision ID: 6649b13d4fd7
 Revises: 
-Create Date: 2026-08-23 08:40:57.564190
+Create Date: 2026-09-12 00:12:03.784485
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'cc305ff35f74'
+revision: str = '6649b13d4fd7'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +26,7 @@ def upgrade() -> None:
     sa.Column('dump', postgresql.JSONB(astext_type=sa.Text()), nullable=False, comment='Full receipt dump in JSON format from CRPT API'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_crpt_orm'))
     )
+    op.create_index('ix_crpt_dump_code', 'crpt_orm', [sa.literal_column("(dump->>'code')")], unique=False)
     op.create_index(op.f('ix_crpt_orm_id'), 'crpt_orm', ['id'], unique=True)
     op.create_table('measures_orm',
     sa.Column('id', sa.SmallInteger(), nullable=False, comment='Unique identifier of the measure'),
@@ -35,9 +36,9 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_measures_orm_id'), 'measures_orm', ['id'], unique=True)
     op.create_table('nds_orm',
-    sa.Column('id', sa.SmallInteger(), nullable=False, comment='Unique identifier of the VAT (НДС)'),
+    sa.Column('id', sa.SmallInteger(), nullable=False, comment='Unique identifier of the NDS (VAT)'),
     sa.Column('rate_name', sa.String(), nullable=False, comment='Short tax rate name'),
-    sa.Column('pf_format', sa.String(), nullable=False, comment='Short string code for print format of VAT type'),
+    sa.Column('pf_format', sa.String(), nullable=False, comment='Short string code for print format of NDS (VAT) type'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_nds_orm'))
     )
     op.create_index(op.f('ix_nds_orm_id'), 'nds_orm', ['id'], unique=True)
@@ -57,55 +58,78 @@ def upgrade() -> None:
     op.create_index(op.f('ix_products_orm_id'), 'products_orm', ['id'], unique=True)
     op.create_table('retailers_orm',
     sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier for the retailer'),
-    sa.Column('inn', sa.String(length=12), nullable=False, comment='TIN (ИНН) of a company or a single persona'),
+    sa.Column('inn', sa.String(length=12), nullable=False, comment='INN (TIN) of a company or a single persona'),
     sa.Column('is_individual', sa.Boolean(), sa.Computed('length(inn) = 12', persisted=True), nullable=False, comment='Flag is the retailer is individual one, company otherwise'),
     sa.Column('name', sa.String(), nullable=False, comment='Name of a company or a persona'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_retailers_orm'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_retailers_orm')),
+    sa.UniqueConstraint('inn', name=op.f('uq_retailers_orm_inn'))
     )
     op.create_index(op.f('ix_retailers_orm_id'), 'retailers_orm', ['id'], unique=True)
+    op.create_table('users_orm',
+    sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier of a user'),
+    sa.Column('username', sa.String(length=16), nullable=False, comment='Unique user name'),
+    sa.Column('hashed_password', sa.String(length=60), nullable=False, comment='Hashed password from user account'),
+    sa.Column('is_admin', sa.Boolean(), nullable=False, comment='Flag if user have additional privilegies'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_users_orm'))
+    )
+    op.create_index(op.f('ix_users_orm_id'), 'users_orm', ['id'], unique=True)
+    op.create_index(op.f('ix_users_orm_is_admin'), 'users_orm', ['is_admin'], unique=False)
+    op.create_index(op.f('ix_users_orm_username'), 'users_orm', ['username'], unique=True)
     op.create_table('shops_orm',
     sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier for the retailer'),
     sa.Column('retailer_id', sa.UUID(), nullable=False, comment='Link on retailer - owner of this shop'),
-    sa.Column('address', sa.String(), nullable=True, comment='Physical address of a shop. Null if shop is online one'),
-    sa.ForeignKeyConstraint(['retailer_id'], ['retailers_orm.id'], name=op.f('fk_shops_orm_retailer_id_retailers_orm'), ondelete='RESTRICT'),
+    sa.Column('address', sa.String(), nullable=False, comment='Physical address of a shop. Null if shop is online one'),
+    sa.ForeignKeyConstraint(['retailer_id'], ['retailers_orm.id'], name=op.f('fk_shops_orm_retailer_id_retailers_orm'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_shops_orm')),
     sa.UniqueConstraint('retailer_id', 'address', name=op.f('uq_shops_orm_retailer_id'))
     )
     op.create_index(op.f('ix_shops_orm_id'), 'shops_orm', ['id'], unique=True)
-    op.create_index(op.f('ix_shops_orm_retailer_id'), 'shops_orm', ['retailer_id'], unique=True)
-    op.create_index('ix_unique_online_shop_per_retailer', 'shops_orm', ['retailer_id'], unique=True, postgresql_where=sa.text('address IS NULL'))
+    op.create_index(op.f('ix_shops_orm_retailer_id'), 'shops_orm', ['retailer_id'], unique=False)
     op.create_table('employees_orm',
     sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier for the employee'),
-    sa.Column('shop_id', sa.UUID(), nullable=False, comment='Foreign key to shops table'),
+    sa.Column('retailer_id', sa.UUID(), nullable=False, comment='Foreign key to retailers table'),
+    sa.Column('shop_id', sa.UUID(), nullable=True, comment='Foreign key to shops table'),
     sa.Column('name', sa.String(), nullable=False, comment='Employee name'),
+    sa.ForeignKeyConstraint(['retailer_id'], ['retailers_orm.id'], name=op.f('fk_employees_orm_retailer_id_retailers_orm'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['shop_id'], ['shops_orm.id'], name=op.f('fk_employees_orm_shop_id_shops_orm'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_employees_orm')),
     sa.UniqueConstraint('shop_id', 'name', name=op.f('uq_employees_orm_shop_id'))
     )
     op.create_index(op.f('ix_employees_orm_id'), 'employees_orm', ['id'], unique=True)
+    op.create_index(op.f('ix_employees_orm_retailer_id'), 'employees_orm', ['retailer_id'], unique=False)
     op.create_index(op.f('ix_employees_orm_shop_id'), 'employees_orm', ['shop_id'], unique=False)
+    op.create_index('ix_employees_retailer_name_null_shop', 'employees_orm', ['retailer_id', 'name'], unique=True, postgresql_where=sa.text('shop_id IS NULL'))
     op.create_table('receipts_orm',
     sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier for the receipt'),
+    sa.Column('owner_id', sa.UUID(), nullable=False, comment='Reference to a user that owns this receipt registry'),
     sa.Column('crpt_id', sa.UUID(), nullable=False, comment='Reference to original CRPT data'),
-    sa.Column('shop_id', sa.UUID(), nullable=False, comment='Reference to shop, where receipt was made'),
+    sa.Column('retailer_id', sa.UUID(), nullable=False, comment='Reference to original CRPT data'),
+    sa.Column('shop_id', sa.UUID(), nullable=True, comment='Reference to shop, where receipt was made'),
+    sa.Column('employee_id', sa.UUID(), nullable=True, comment='Reference to employee, worked on this receipt'),
     sa.Column('t', sa.DateTime(), nullable=False, comment='Receipt timestamp'),
     sa.Column('s', sa.Numeric(precision=15, scale=2), nullable=False, comment='Sum of prices by items in receipt'),
     sa.Column('fn', sa.BigInteger(), nullable=False, comment='Fiscal drive number (ФН)'),
     sa.Column('i', sa.BigInteger(), nullable=False, comment='Fiscal document number (ФД)'),
     sa.Column('fp', sa.BigInteger(), nullable=False, comment='Fiscal sign (ФП)'),
     sa.Column('n', sa.SmallInteger(), nullable=False, comment='Operation type'),
-    sa.ForeignKeyConstraint(['crpt_id'], ['crpt_orm.id'], name=op.f('fk_receipts_orm_crpt_id_crpt_orm'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['shop_id'], ['shops_orm.id'], name=op.f('fk_receipts_orm_shop_id_shops_orm'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['crpt_id'], ['crpt_orm.id'], name=op.f('fk_receipts_orm_crpt_id_crpt_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees_orm.id'], name=op.f('fk_receipts_orm_employee_id_employees_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['owner_id'], ['users_orm.id'], name=op.f('fk_receipts_orm_owner_id_users_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['retailer_id'], ['retailers_orm.id'], name=op.f('fk_receipts_orm_retailer_id_retailers_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['shop_id'], ['shops_orm.id'], name=op.f('fk_receipts_orm_shop_id_shops_orm'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_receipts_orm')),
     sa.UniqueConstraint('t', 's', 'fn', 'i', 'fp', 'n', name=op.f('uq_receipts_orm_t'))
     )
     op.create_index(op.f('ix_receipts_orm_crpt_id'), 'receipts_orm', ['crpt_id'], unique=True)
+    op.create_index(op.f('ix_receipts_orm_employee_id'), 'receipts_orm', ['employee_id'], unique=False)
     op.create_index(op.f('ix_receipts_orm_id'), 'receipts_orm', ['id'], unique=True)
+    op.create_index(op.f('ix_receipts_orm_owner_id'), 'receipts_orm', ['owner_id'], unique=False)
+    op.create_index(op.f('ix_receipts_orm_retailer_id'), 'receipts_orm', ['retailer_id'], unique=False)
     op.create_index(op.f('ix_receipts_orm_shop_id'), 'receipts_orm', ['shop_id'], unique=False)
     op.create_table('items_orm',
     sa.Column('id', sa.UUID(), nullable=False, comment='Unique identifier for the item'),
     sa.Column('receipt_id', sa.UUID(), nullable=False, comment='Relations to receipt with this item'),
-    sa.Column('name', sa.String(), nullable=False, comment='Employee name'),
+    sa.Column('name', sa.String(), nullable=True, comment='Item name'),
     sa.Column('price', sa.Numeric(precision=15, scale=2), nullable=False, comment='Price for exactly one measure of item'),
     sa.Column('total', sa.Numeric(precision=15, scale=2), nullable=False, comment='Total price of items bought, should be equal to quantity times price'),
     sa.Column('quantity', sa.Float(), nullable=False, comment='Number of items bought'),
@@ -113,11 +137,11 @@ def upgrade() -> None:
     sa.Column('nds', sa.SmallInteger(), nullable=False, comment='Type of VAT (НДС) for item'),
     sa.Column('payment', sa.SmallInteger(), nullable=False, comment='Item payment type'),
     sa.Column('product', sa.SmallInteger(), nullable=False, comment='Product category'),
-    sa.ForeignKeyConstraint(['measure'], ['measures_orm.id'], name=op.f('fk_items_orm_measure_measures_orm'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['nds'], ['nds_orm.id'], name=op.f('fk_items_orm_nds_nds_orm'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['payment'], ['payments_orm.id'], name=op.f('fk_items_orm_payment_payments_orm'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['product'], ['products_orm.id'], name=op.f('fk_items_orm_product_products_orm'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['receipt_id'], ['receipts_orm.id'], name=op.f('fk_items_orm_receipt_id_receipts_orm'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['measure'], ['measures_orm.id'], name=op.f('fk_items_orm_measure_measures_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['nds'], ['nds_orm.id'], name=op.f('fk_items_orm_nds_nds_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['payment'], ['payments_orm.id'], name=op.f('fk_items_orm_payment_payments_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product'], ['products_orm.id'], name=op.f('fk_items_orm_product_products_orm'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['receipt_id'], ['receipts_orm.id'], name=op.f('fk_items_orm_receipt_id_receipts_orm'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_items_orm'))
     )
     op.create_index(op.f('ix_items_orm_id'), 'items_orm', ['id'], unique=True)
@@ -132,16 +156,24 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_items_orm_id'), table_name='items_orm')
     op.drop_table('items_orm')
     op.drop_index(op.f('ix_receipts_orm_shop_id'), table_name='receipts_orm')
+    op.drop_index(op.f('ix_receipts_orm_retailer_id'), table_name='receipts_orm')
+    op.drop_index(op.f('ix_receipts_orm_owner_id'), table_name='receipts_orm')
     op.drop_index(op.f('ix_receipts_orm_id'), table_name='receipts_orm')
+    op.drop_index(op.f('ix_receipts_orm_employee_id'), table_name='receipts_orm')
     op.drop_index(op.f('ix_receipts_orm_crpt_id'), table_name='receipts_orm')
     op.drop_table('receipts_orm')
+    op.drop_index('ix_employees_retailer_name_null_shop', table_name='employees_orm', postgresql_where=sa.text('shop_id IS NULL'))
     op.drop_index(op.f('ix_employees_orm_shop_id'), table_name='employees_orm')
+    op.drop_index(op.f('ix_employees_orm_retailer_id'), table_name='employees_orm')
     op.drop_index(op.f('ix_employees_orm_id'), table_name='employees_orm')
     op.drop_table('employees_orm')
-    op.drop_index('ix_unique_online_shop_per_retailer', table_name='shops_orm', postgresql_where=sa.text('address IS NULL'))
     op.drop_index(op.f('ix_shops_orm_retailer_id'), table_name='shops_orm')
     op.drop_index(op.f('ix_shops_orm_id'), table_name='shops_orm')
     op.drop_table('shops_orm')
+    op.drop_index(op.f('ix_users_orm_username'), table_name='users_orm')
+    op.drop_index(op.f('ix_users_orm_is_admin'), table_name='users_orm')
+    op.drop_index(op.f('ix_users_orm_id'), table_name='users_orm')
+    op.drop_table('users_orm')
     op.drop_index(op.f('ix_retailers_orm_id'), table_name='retailers_orm')
     op.drop_table('retailers_orm')
     op.drop_index(op.f('ix_products_orm_id'), table_name='products_orm')
@@ -153,5 +185,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_measures_orm_id'), table_name='measures_orm')
     op.drop_table('measures_orm')
     op.drop_index(op.f('ix_crpt_orm_id'), table_name='crpt_orm')
+    op.drop_index('ix_crpt_dump_code', table_name='crpt_orm')
     op.drop_table('crpt_orm')
     # ### end Alembic commands ###

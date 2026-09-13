@@ -19,8 +19,6 @@ class ItemsOrm(Base):
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the item",
     )
@@ -33,7 +31,7 @@ class ItemsOrm(Base):
     )
 
     # Important
-    name: Mapped[str] = mapped_column(
+    name: Mapped[str | None] = mapped_column(
         String,
         nullable=True,
         comment="Item name",
@@ -59,25 +57,29 @@ class ItemsOrm(Base):
     # Linked directories
     measure: Mapped[int] = mapped_column(
         SmallInteger,
-        ForeignKey("measures_orm.id", ondelete="CASCADE"),
+        ForeignKey("measures_orm.id", ondelete="RESTRICT"),
+        index=True,
         nullable=False,
         comment="Type of measure for bought item",
     )
     nds: Mapped[int] = mapped_column(
         SmallInteger,
-        ForeignKey("nds_orm.id", ondelete="CASCADE"),
+        ForeignKey("nds_orm.id", ondelete="RESTRICT"),
+        index=True,
         nullable=False,
         comment="Type of VAT (НДС) for item",
     )
     payment: Mapped[int] = mapped_column(
         SmallInteger,
-        ForeignKey("payments_orm.id", ondelete="CASCADE"),
+        ForeignKey("payments_orm.id", ondelete="RESTRICT"),
+        index=True,
         nullable=False,
         comment="Item payment type",
     )
     product: Mapped[int] = mapped_column(
         SmallInteger,
-        ForeignKey("products_orm.id", ondelete="CASCADE"),
+        ForeignKey("products_orm.id", ondelete="RESTRICT"),
+        index=True,
         nullable=False,
         comment="Product category",
     )
@@ -86,4 +88,5 @@ class ItemsOrm(Base):
     receipt: Mapped["ReceiptsOrm"] = relationship(
         "ReceiptsOrm",
         back_populates="items",
+        lazy="selectin",
     )

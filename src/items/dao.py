@@ -6,7 +6,6 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
-from src.shops.model import ShopsOrm
 from src.receipts.model import ReceiptsOrm
 
 

@@ -24,8 +24,6 @@ class ShopsOrm(Base):
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the retailer",
     )
@@ -39,7 +37,7 @@ class ShopsOrm(Base):
     address: Mapped[str] = mapped_column(
         String(),
         nullable=False,
-        comment="Physical address of a shop. Null if shop is online one",
+        comment="Physical address of a shop",
     )
 
     # Relations

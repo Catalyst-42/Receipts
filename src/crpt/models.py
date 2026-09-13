@@ -25,8 +25,6 @@ class CrptOrm(Base):
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
     )

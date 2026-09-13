@@ -34,8 +34,6 @@ class ReceiptsOrm(Base):
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        index=True,
-        unique=True,
         default=lambda: uuid7(),
         comment="Unique identifier for the receipt",
     )
@@ -49,7 +47,6 @@ class ReceiptsOrm(Base):
     crpt_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("crpt_orm.id", ondelete="CASCADE"),
-        index=True,
         unique=True,
         nullable=False,
         comment="Reference to original CRPT data",

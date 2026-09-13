@@ -11,8 +11,6 @@ class MeasuresOrm(Base):
     id: Mapped[int] = mapped_column(
         SmallInteger,
         primary_key=True,
-        index=True,
-        unique=True,
         comment="Unique identifier of the measure",
     )
     description: Mapped[str] = mapped_column(

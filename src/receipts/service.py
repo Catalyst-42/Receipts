@@ -61,6 +61,7 @@ class ReceiptsService:
     @transactional
     async def create(
         self,
+        owner_id: UUID7,
         crpt_id: UUID7,
         retailer_id: UUID7,
         shop_id: UUID7 | None,
@@ -77,6 +78,7 @@ class ReceiptsService:
         )
         if not result:
             result = await self.receipts_dao.create(
+                owner_id,
                 crpt_id,
                 retailer_id,
                 shop_id,
