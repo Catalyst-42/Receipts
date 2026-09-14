@@ -88,14 +88,13 @@ if __name__ == "__main__":
     )
     parser.add_argument("path", help="Directory or file (image, JSON, or TXT)")
     parser.add_argument(
+        "token",
+        help="Authorization token for API access",
+    )
+    parser.add_argument(
         "--api-url",
         default="https://localhost:8800",
         help="Receipts API base URL (default: https://localhost:8800)",
-    )
-    parser.add_argument(
-        "--token",
-        required=True,
-        help="Authorization token for API access",
     )
     args = parser.parse_args()
     asyncio.run(main(args.path, args.api_url, args.token))
