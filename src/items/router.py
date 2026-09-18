@@ -72,5 +72,4 @@ async def get_item(
     items_service: ItemsService = Depends(get_items_service),
 ) -> Item:
     """Returns item by its unique id"""
-    result = await items_service.get_by_id(request.item_id)
-    return result
+    return await items_service.get_by_id(request.item_id)

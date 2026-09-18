@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.receipts.schemes import ReceiptList
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
 from src.users.dao import UsersDao
@@ -24,12 +25,18 @@ class UsersService:
 
         return User.model_validate(result)
 
-    async def get_by_username(self, username: str) -> User:
+    async def get_by_username(self, user: User, username: str) -> User:
         result = await self.users_dao.get_by_username(username)
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found",
+            )
+
+        if not user.is_admin and user.id != result.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have no rights to view this user"
             )
 
         return User.model_validate(result)
@@ -87,3 +94,19 @@ class UsersService:
             hashed_password=hashed_password,
         )
         return User.model_validate(result)
+
+    async def get_receipts(self, user: User, username: str) -> ReceiptList:
+        result = await self.users_dao.get_by_username(username)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if not user.is_admin and user.id != result.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have no rights to view this user"
+            )
+
+        return ReceiptList(items=result.receipts)

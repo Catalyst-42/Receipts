@@ -3,9 +3,9 @@ import QrScanner from 'qr-scanner';
 // DOM references
 const reader = document.getElementById('reader');
 const manualPanel = document.getElementById('manualPanel');
-const actionBtn = document.getElementById('actionBtn');
-const modeToggleBtn = document.getElementById('modeToggleBtn');
-const modeToggleIcon = document.getElementById('modeToggleIcon');
+const manualToggleBtn = document.getElementById('manualToggleBtn');
+const cameraToggleBtn = document.getElementById('cameraToggleBtn');
+const submitBtn = document.getElementById('submitBtn');
 const manualInput = document.getElementById('manualInput');
 const resultDiv = document.getElementById('result');
 const receiptCountDiv = document.getElementById('receiptCount');
@@ -19,8 +19,8 @@ const fieldFp = document.getElementById('fieldFp');
 const fieldN = document.getElementById('fieldN');
 
 // Auth bar
+const authUserIcon = document.getElementById('authUserIcon');
 const authUsernameSpan = document.getElementById('authUsername');
-const authAdminBadge = document.getElementById('authAdminBadge');
 const authActionBtn = document.getElementById('authActionBtn');
 
 // Auth modal
@@ -37,7 +37,7 @@ const authModeRegisterTab = document.getElementById('authModeRegisterTab');
 let scanner = null;
 let isScanning = false;
 let isBusy = false;
-let currentMode = 'camera'; // 'camera' | 'manual'
+let viewMode = 'camera';
 let authToken = localStorage.getItem('authToken');
 let authMode = 'login';
 
@@ -50,7 +50,6 @@ const ITEMS_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div clas
 const LOADING_TEMPLATE = '<div class="text-secondary mt-3"><div class="progress" style="height: 4px;"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div></div></div>';
 const ERROR_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="text-danger">{message}</div></div></div>';
 
-// Field validation helpers
 function setFieldError(inputEl, feedbackEl, message) {
   inputEl.classList.add('is-invalid');
   inputEl.classList.remove('is-valid');
@@ -78,42 +77,56 @@ function clearAuthFormState() {
 // Busy state
 function setBusy(busy) {
   isBusy = busy;
-  actionBtn.disabled = busy;
-  modeToggleBtn.disabled = busy;
+  submitBtn.disabled = busy;
   manualInput.disabled = busy;
+  manualToggleBtn.disabled = busy;
+  cameraToggleBtn.disabled = busy;
   [fieldT, fieldS, fieldN, fieldFn, fieldI, fieldFp].forEach(field => {
     if (field) field.disabled = busy;
   });
-  updateActionButton();
 }
 
-function updateActionButton() {
-  // Action selector
-  if (currentMode === 'camera') {
-    modeToggleIcon.className = 'bi bi-pencil';
-    modeToggleBtn.title = 'Переключить на ручной ввод';
-  } else {
-    modeToggleIcon.className = 'bi bi-camera';
-    modeToggleBtn.title = 'Переключить на камеру';
+// Camera and manual are mutually exclusive
+function setViewMode(mode) {
+  viewMode = mode;
+  reader.classList.toggle('d-none', mode !== 'camera');
+  manualPanel.classList.toggle('d-none', mode !== 'manual');
+  manualToggleBtn.classList.toggle('btn-secondary', mode === 'manual');
+  manualToggleBtn.classList.toggle('btn-primary', mode !== 'manual');
+}
+
+// Pencil: switch to manual view, stop camera if running
+async function onManualButtonClick() {
+  if (isBusy) return;
+  if (viewMode === 'manual') return;
+
+  if (isScanning) await stopScanner();
+  isScanning = false;
+  setViewMode('manual');
+}
+
+manualToggleBtn.addEventListener('click', onManualButtonClick);
+
+// Camera button: switching view never auto-starts capture.
+// - From manual -> switch to camera view (camera stays off)
+// - In camera on -> stop (view stays)
+// - In camera off -> start
+async function onCameraButtonClick() {
+  if (isBusy) return;
+
+  if (viewMode !== 'camera') {
+    setViewMode('camera');
+    return;
   }
 
-  // Action buttom
-  if (currentMode === 'camera') {
-    if (isScanning) {
-      actionBtn.textContent = 'Стоп';
-      actionBtn.classList.remove('btn-primary');
-      actionBtn.classList.add('btn-danger');
-    } else {
-      actionBtn.textContent = 'Старт';
-      actionBtn.classList.remove('btn-danger');
-      actionBtn.classList.add('btn-primary');
-    }
+  if (isScanning) {
+    await stopScanner();
   } else {
-    actionBtn.textContent = 'Проверить';
-    actionBtn.classList.remove('btn-danger');
-    actionBtn.classList.add('btn-primary');
+    await startScanner();
   }
 }
+
+cameraToggleBtn.addEventListener('click', onCameraButtonClick);
 
 // Auth tabs
 function setAuthMode(mode) {
@@ -166,7 +179,7 @@ function logout() {
 async function getCurrentUser() {
   if (!authToken) return null;
   try {
-    const response = await fetch('./auth/me', {
+    const response = await fetch('./users/me', {
       headers: { 'Authorization': `Bearer ${authToken}` }
     });
     if (!response.ok) throw new Error('Failed to fetch current user');
@@ -186,13 +199,19 @@ function updateAuthUI() {
     authActionBtn.classList.remove('btn-primary');
     authActionBtn.classList.add('btn-danger');
 
+    // Ignore late response if session already changed
+    const tokenAtRequest = authToken;
+
     getCurrentUser().then(user => {
+      if (authToken !== tokenAtRequest) return;
       authUsernameSpan.textContent = user ? user.username : 'Пользователь';
-      authAdminBadge.style.display = user && user.is_admin ? 'inline' : 'none';
+      authUserIcon.className = user && user.is_admin
+        ? 'bi bi-tools me-2'
+        : 'bi bi-person-circle me-2';
     });
   } else {
     authUsernameSpan.textContent = 'Гость';
-    authAdminBadge.style.display = 'none';
+    authUserIcon.className = 'bi bi-person-circle me-2';
     authActionBtn.textContent = 'Войти';
     authActionBtn.classList.remove('btn-danger');
     authActionBtn.classList.add('btn-primary');
@@ -250,7 +269,6 @@ function formatItemsData(items) {
 <i class="bi bi-box text-secondary"></i> <span class="text-secondary">Тип товара:</span> ${item.product}`).join('<br><br>');
 }
 
-// Card builders
 function createReceiptCard(content) { return RECEIPT_CARD_TEMPLATE.replace('{content}', content); }
 function createRetailerCard(content) { return RETAILER_CARD_TEMPLATE.replace('{content}', content); }
 function createShopCard(content) { return SHOP_CARD_TEMPLATE.replace('{content}', content); }
@@ -272,11 +290,14 @@ function createBeautifulCards(data) {
 async function onScanSuccess(decodedText) {
   if (isBusy) return;
   manualInput.value = decodedText;
-  await stopScanner();
+  parseFieldsFromManualInput();
   await fetchReceiptData(decodedText);
 }
 
 async function fetchReceiptData(qrCode) {
+  const wasScanning = isScanning;
+  if (wasScanning) await stopScannerInternal();
+
   setBusy(true);
   resultDiv.innerHTML = LOADING_TEMPLATE;
 
@@ -306,16 +327,17 @@ async function fetchReceiptData(qrCode) {
     resultDiv.innerHTML = `<div class="card bg-dark text-danger mt-3 border border-danger"><div class="card-body p-3"><h6 class="card-title mb-2 text-danger">Ошибка</h6><div class="text-danger"><i class="bi bi-exclamation-triangle text-danger me-2"></i><span class="text-danger">Причина:</span> ${err.message}</div></div></div>`;
   } finally {
     setBusy(false);
+    if (wasScanning) {
+      startScanner();
+    }
   }
 }
 
-// Converts "YYYY-MM-DDTHH:mm" to "YYYYMMDDTHHmm"
 function formatTimestampField(value) {
   if (!value) return '';
   return value.replace(/[-:]/g, '');
 }
 
-// QR Builder
 function rebuildManualInputFromFields() {
   const params = new URLSearchParams();
 
@@ -331,40 +353,23 @@ function rebuildManualInputFromFields() {
   manualInput.value = params.toString();
 }
 
+function parseFieldsFromManualInput() {
+  const raw = manualInput.value.trim();
+  const params = new URLSearchParams(raw);
+
+  fieldT.value = params.get('t') || '';
+  fieldS.value = params.get('s') || '';
+  fieldN.value = params.get('n') || '';
+  fieldFn.value = params.get('fn') || '';
+  fieldI.value = params.get('i') || '';
+  fieldFp.value = params.get('fp') || '';
+}
+
 [fieldT, fieldS, fieldFn, fieldI, fieldFp, fieldN].forEach(field => {
   field.addEventListener('input', rebuildManualInputFromFields);
 });
 
-function toggleMode() {
-  if (isBusy) return;
-
-  if (currentMode === 'camera') {
-    currentMode = 'manual';
-    reader.classList.add('d-none');
-    manualPanel.classList.remove('d-none');
-    updateActionButton();
-    if (isScanning) stopScanner();
-  } else {
-    currentMode = 'camera';
-    manualPanel.classList.add('d-none');
-    reader.classList.remove('d-none');
-    updateActionButton();
-  }
-}
-
-function onActionClick() {
-  if (isBusy) return;
-
-  if (currentMode === 'camera') {
-    if (isScanning) {
-      stopScanner();
-    } else {
-      startScanner();
-    }
-  } else {
-    onManualSubmit();
-  }
-}
+manualInput.addEventListener('input', parseFieldsFromManualInput);
 
 function onManualSubmit() {
   if (isBusy) return;
@@ -397,6 +402,8 @@ async function startScanner() {
 
     await scanner.start();
     isScanning = true;
+    cameraToggleBtn.classList.remove('btn-primary');
+    cameraToggleBtn.classList.add('btn-danger');
   } catch (err) {
     resultDiv.innerHTML = createError(err.message || err.toString());
   } finally {
@@ -443,7 +450,8 @@ function stopScannerInternal() {
     }
   }).then(() => {
     isScanning = false;
-    updateActionButton();
+    cameraToggleBtn.classList.remove('btn-danger');
+    cameraToggleBtn.classList.add('btn-primary');
   });
 }
 
@@ -458,12 +466,9 @@ async function updateReceiptCount() {
   }
 }
 
-// Event listeners
-modeToggleBtn.addEventListener('click', toggleMode);
-actionBtn.addEventListener('click', onActionClick);
+submitBtn.addEventListener('click', onManualSubmit);
 window.addEventListener('beforeunload', () => stopScannerInternal());
 
-// Auth form submit
 authForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearAuthFormState();
@@ -501,5 +506,5 @@ authActionBtn.addEventListener('click', () => {
 });
 
 // Initial render
+setViewMode('camera');
 updateAuthUI();
-updateActionButton();

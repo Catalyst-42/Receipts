@@ -19,6 +19,7 @@ from src.registry.router import router as registry_router
 from src.retailers.router import router as retailers_router
 from src.shops.router import router as shops_router
 from src.users.router import router as users_router
+from src.auth.router import router as auth_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
@@ -44,6 +45,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(core_router)
 
 # Users
+app.include_router(auth_router)
 app.include_router(users_router)
 
 # Core
