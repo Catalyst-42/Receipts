@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Sequence
 
 from pydantic import UUID7
-from sqlalchemy import func, select, exists
+from sqlalchemy import Select, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.receipts.model import ReceiptsOrm
@@ -102,3 +102,6 @@ class ReceiptsDao:
 
         result = await self.db.execute(stmt)
         return result.scalar()
+
+    def build_query_by_owner(self, owner_id: UUID7) -> Select:
+        return select(ReceiptsOrm).where(ReceiptsOrm.owner_id == owner_id)

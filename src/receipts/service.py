@@ -96,3 +96,4 @@ class ReceiptsService:
     async def exists_by_employee_and_user(self, user_id: UUID7, employee_id: UUID7) -> bool:
         result = await self.receipts_dao.exists_by_employee_and_user(user_id, employee_id)
         return result
+

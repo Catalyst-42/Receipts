@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi_pagination import add_pagination
 
+from src.auth.router import router as auth_router
 from src.config import settings
 from src.core.middleware import ProcessTimeMiddleware
 from src.core.router import router as core_router
@@ -19,9 +21,9 @@ from src.registry.router import router as registry_router
 from src.retailers.router import router as retailers_router
 from src.shops.router import router as shops_router
 from src.users.router import router as users_router
-from src.auth.router import router as auth_router
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
+add_pagination(app)
 
 # Middleware
 app.add_middleware(

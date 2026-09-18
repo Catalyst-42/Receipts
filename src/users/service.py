@@ -1,19 +1,24 @@
 from fastapi import HTTPException, status
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.receipts.schemes import ReceiptList
+from src.core.jwt import create_access_token
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
+from src.receipts.dao import ReceiptsDao
+from src.receipts.filters import ReceiptFilter
+from src.receipts.schemes import Receipt
 from src.users.dao import UsersDao
-from src.users.schemes import User, Login, AccessToken, Passwords, Register
-from src.core.jwt import create_access_token
+from src.users.schemes import AccessToken, Login, Passwords, Register, User
 
 
 class UsersService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.users_dao = UsersDao(db)
+        self.receipts_dao = ReceiptsDao(db)
 
     async def get_by_id(self, user_id: UUID7) -> User:
         result = await self.users_dao.get_by_id(user_id)
@@ -36,7 +41,7 @@ class UsersService:
         if not user.is_admin and user.id != result.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You have no rights to view this user"
+                detail="You have no rights to view this user",
             )
 
         return User.model_validate(result)
@@ -95,7 +100,12 @@ class UsersService:
         )
         return User.model_validate(result)
 
-    async def get_receipts(self, user: User, username: str) -> ReceiptList:
+    async def get_receipts(
+        self,
+        user: User,
+        username: str,
+        filters: ReceiptFilter,
+    ) -> Page[Receipt]:
         result = await self.users_dao.get_by_username(username)
         if not result:
             raise HTTPException(
@@ -106,7 +116,10 @@ class UsersService:
         if not user.is_admin and user.id != result.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You have no rights to view this user"
+                detail="You have no rights to view this user",
             )
 
-        return ReceiptList(items=result.receipts)
+        stmt = self.receipts_dao.build_query_by_owner(result.id, filters)
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+        return await apaginate(self.db, stmt)
