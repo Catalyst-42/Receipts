@@ -33,7 +33,7 @@ class ShopsService:
 
     async def get_count(self) -> Count:
         result = await self.shops_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)
 
     async def get_items(self, shop_id: UUID7) -> ItemList:
         result = await self.items_service.get_all_by_shop_id(shop_id)

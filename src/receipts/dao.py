@@ -2,16 +2,27 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Sequence
 
+from fastapi_pagination import Page
+from src.receipts.schemes import Receipt
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy import Select, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.receipts.filters import ReceiptsFilter
 from src.receipts.model import ReceiptsOrm
 
 
 class ReceiptsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    def build_query(self) -> Select:
+        return select(ReceiptsOrm)
+
+    def build_query_by_owner(
+        self, owner_id: UUID7) -> Select:
+        return select(ReceiptsOrm).where(ReceiptsOrm.owner_id == owner_id)
 
     async def get_all(self) -> Sequence[ReceiptsOrm]:
         stmt = select(ReceiptsOrm)
@@ -89,19 +100,3 @@ class ReceiptsDao:
         self.db.add(result)
         await self.db.flush()
         return result
-
-    async def exists_by_employee_and_user(
-        self, user_id: UUID7, employee_id: UUID7
-    ) -> bool:
-        stmt = select(
-            exists().where(
-                ReceiptsOrm.owner_id == user_id,
-                ReceiptsOrm.employee_id == employee_id,
-            )
-        )
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    def build_query_by_owner(self, owner_id: UUID7) -> Select:
-        return select(ReceiptsOrm).where(ReceiptsOrm.owner_id == owner_id)

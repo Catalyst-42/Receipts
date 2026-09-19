@@ -30,7 +30,7 @@ class EmployeesService:
 
     async def get_count(self) -> Count:
         result = await self.employees_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)
 
     @transactional
     async def create(

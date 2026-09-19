@@ -28,4 +28,4 @@ class PaymentsService:
 
     async def get_count(self) -> Count:
         result = await self.payments_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)

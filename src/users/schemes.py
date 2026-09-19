@@ -59,3 +59,15 @@ class User(BaseModel):
         example=False,
         description="Flag indicating if user is admin",
     )
+
+class Owner(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID7 = Field(
+        example="01a04f1b-cb73-7110-bd8b-b2eba9b49d11",
+        description="Unique user identifier",
+    )
+    username: str = Field(
+        example="Catalyst",
+        description="Unique user name",
+    )

@@ -27,4 +27,4 @@ class ProductsService:
 
     async def get_count(self) -> Count:
         result = await self.retailers_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)

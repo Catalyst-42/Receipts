@@ -42,6 +42,7 @@ let authToken = localStorage.getItem('authToken');
 let authMode = 'login';
 
 // Templates
+const OWNER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Владелец</h6><div>{content}</div></div></div>';
 const RECEIPT_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Чек</h6><div>{content}</div></div></div>';
 const RETAILER_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Магазин</h6><div>{content}</div></div></div>';
 const SHOP_CARD_TEMPLATE = '<div class="card bg-dark text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Адрес</h6><div>{content}</div></div></div>';
@@ -228,6 +229,11 @@ function formatNumber(num) {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
+function formatOwnerData(owner) {
+  return `<i class="bi bi-hash text-secondary"></i> <span class="text-secondary">ID:</span> ${owner.id}<br>
+<i class="bi bi-person-circle text-secondary"></i> <span class="text-secondary">Имя:</span> ${owner.username}`;
+}
+
 function formatReceiptData(receipt) {
   return `<i class="bi bi-hash text-secondary"></i> <span class="text-secondary">ID:</span> ${receipt.id}<br>
 <i class="bi bi-calendar3 text-secondary"></i> <span class="text-secondary">Дата:</span> ${new Date(receipt.t).toLocaleString('ru-RU').replace(',', '')}<br>
@@ -269,6 +275,7 @@ function formatItemsData(items) {
 <i class="bi bi-box text-secondary"></i> <span class="text-secondary">Тип товара:</span> ${item.product}`).join('<br><br>');
 }
 
+function createOwnerCard(content) { return OWNER_CARD_TEMPLATE.replace('{content}', content); }
 function createReceiptCard(content) { return RECEIPT_CARD_TEMPLATE.replace('{content}', content); }
 function createRetailerCard(content) { return RETAILER_CARD_TEMPLATE.replace('{content}', content); }
 function createShopCard(content) { return SHOP_CARD_TEMPLATE.replace('{content}', content); }
@@ -278,6 +285,7 @@ function createError(message) { return ERROR_TEMPLATE.replace('{message}', messa
 
 function createBeautifulCards(data) {
   let html = '';
+  if (data.owner) html += createOwnerCard(formatOwnerData(data.owner));
   if (data.receipt) html += createReceiptCard(formatReceiptData(data.receipt));
   if (data.items && data.items.length > 0) html += createItemsCard(formatItemsData(data.items));
   if (data.retailer) html += createRetailerCard(formatRetailerData(data.retailer));

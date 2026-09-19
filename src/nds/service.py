@@ -28,4 +28,4 @@ class NdsService:
 
     async def get_count(self) -> Count:
         result = await self.nds_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)

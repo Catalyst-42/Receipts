@@ -29,7 +29,7 @@ class Average(BaseModel):
 
 
 class Count(BaseModel):
-    total: int = Field(
+    count: int = Field(
         example=1479,
         description="Total count of itmes",
         ge=0,

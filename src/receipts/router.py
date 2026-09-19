@@ -2,19 +2,15 @@ from typing import Annotated
 
 from fastapi import Depends, Path, Query
 from fastapi.routing import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.db import get_db
 from src.core.schemes import Count, ErrorResponse, Total
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptId
-from src.receipts.service import ReceiptsService
 from src.items.schemes import ItemList
+from src.receipts.dependencies import get_receipts_service
+from src.receipts.schemes import FiscalFields, Receipt, ReceiptId, ReceiptsStats
+from src.receipts.service import ReceiptsService
 
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 
-
-def get_receipts_service(db: AsyncSession = Depends(get_db)):
-    return ReceiptsService(db)
 
 
 @router.get(
@@ -24,9 +20,8 @@ def get_receipts_service(db: AsyncSession = Depends(get_db)):
 async def get_receipts_count(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Count:
-    """Returns total count of receipts in database"""
-    result = await receipt_service.get_count()
-    return result
+    """Returns total count of receipts"""
+    return await receipt_service.get_count()
 
 
 @router.get(
@@ -36,10 +31,18 @@ async def get_receipts_count(
 async def get_receipts_total(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Total:
-    """Returns total sum of prices of receipts in database"""
-    result = await receipt_service.get_total()
-    return result
+    """Returns total sum of prices of receipts"""
+    return await receipt_service.get_total()
 
+@router.get(
+    "/stats",
+    response_model=ReceiptsStats,
+)
+async def get_receipts_stats(
+    receipt_service: ReceiptsService = Depends(get_receipts_service),
+) -> ReceiptsStats:
+    """Returns stats for all receipts"""
+    return await receipt_service.get_stats()
 
 @router.get(
     "/by-fiscal-fields",
@@ -54,8 +57,7 @@ async def get_receipt_by_fiscal_fields(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Receipt:
     """Returns full recepie info by fiscal data"""
-    result = await receipt_service.get_by_fiscal_fields(request)
-    return result
+    return await receipt_service.get_by_fiscal_fields(request)
 
 
 @router.get(
@@ -70,8 +72,7 @@ async def get_receipt_by_id(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> ItemList:
     """Returns items of receipt by receipt unique id"""
-    result = await receipt_service.get_items(request.receipt_id)
-    return result
+    return await receipt_service.get_items(request.receipt_id)
 
 
 @router.get(
@@ -86,5 +87,4 @@ async def get_receipt_by_id(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> Receipt:
     """Returns receipt info by its unique id"""
-    result = await receipt_service.get_by_id(request.receipt_id)
-    return result
+    return await receipt_service.get_by_id(request.receipt_id)

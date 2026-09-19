@@ -1,15 +1,14 @@
 from fastapi import HTTPException, status
 from fastapi_pagination import Page
-from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.jwt import create_access_token
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
-from src.receipts.dao import ReceiptsDao
-from src.receipts.filters import ReceiptFilter
+from src.receipts.filters import ReceiptsFilter
 from src.receipts.schemes import Receipt
+from src.receipts.service import ReceiptsService
 from src.users.dao import UsersDao
 from src.users.schemes import AccessToken, Login, Passwords, Register, User
 
@@ -18,7 +17,7 @@ class UsersService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.users_dao = UsersDao(db)
-        self.receipts_dao = ReceiptsDao(db)
+        self.receipts_service = ReceiptsService(db)
 
     async def get_by_id(self, user_id: UUID7) -> User:
         result = await self.users_dao.get_by_id(user_id)
@@ -104,22 +103,19 @@ class UsersService:
         self,
         user: User,
         username: str,
-        filters: ReceiptFilter,
+        filters: ReceiptsFilter,
     ) -> Page[Receipt]:
-        result = await self.users_dao.get_by_username(username)
-        if not result:
+        owner = await self.users_dao.get_by_username(username)
+        if not owner:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found",
             )
 
-        if not user.is_admin and user.id != result.id:
+        if not user.is_admin and user.id != owner.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You have no rights to view this user",
             )
 
-        stmt = self.receipts_dao.build_query_by_owner(result.id, filters)
-        stmt = filters.filter(stmt)
-        stmt = filters.sort(stmt)
-        return await apaginate(self.db, stmt)
+        return await self.receipts_service.get_by_owner(owner.id, filters)

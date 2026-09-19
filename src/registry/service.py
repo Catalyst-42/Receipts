@@ -8,6 +8,7 @@ from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
+from src.users.schemes import Owner
 from src.crpt.schemes import Crpt
 from src.crpt.service import CrptService
 from src.employees.schemes import Employee
@@ -106,6 +107,7 @@ class RegistryService:
                 detail="Registry is not found by fiscal fields",
             )
 
+        owner = receipt.owner
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.shop.retailer
@@ -113,6 +115,7 @@ class RegistryService:
         employee = receipt.employee
 
         return Registry(
+            owner=Owner.model_validate(owner),
             crpt=Crpt.model_validate(crpt),
             receipt=Receipt.model_validate(receipt),
             items=[Item.model_validate(item) for item in items],
@@ -129,6 +132,7 @@ class RegistryService:
                 detail=f"Registry is not found by receipt with id {receipt_id}",
             )
 
+        owner = receipt.owner
         crpt = receipt.crpt
         items = receipt.items
         retailer = receipt.retailer
@@ -136,6 +140,7 @@ class RegistryService:
         employee = receipt.employee
 
         return Registry(
+            owner=Owner.model_validate(owner),
             crpt=Crpt.model_validate(crpt),
             receipt=Receipt.model_validate(receipt),
             items=[Item.model_validate(item) for item in items],
@@ -145,7 +150,7 @@ class RegistryService:
         )
 
     @transactional
-    async def create(self, user_id: UUID7, fiscal_fields: FiscalFields) -> Registry:
+    async def create(self, owner: User, fiscal_fields: FiscalFields) -> Registry:
         receipt = await self.receipts_service.receipts_dao.get_by_fiscal_fields(
             fiscal_fields.t_datetime,
             fiscal_fields.s,
@@ -155,6 +160,7 @@ class RegistryService:
             fiscal_fields.n,
         )
         if receipt:
+            owner = receipt.owner
             crpt = receipt.crpt
             items = receipt.items
             retailer = receipt.retailer
@@ -162,6 +168,7 @@ class RegistryService:
             employee = receipt.employee
 
             return Registry(
+                owner=Owner.model_validate(owner),
                 crpt=Crpt.model_validate(crpt),
                 receipt=Receipt.model_validate(receipt),
                 items=[Item.model_validate(item) for item in items],
@@ -214,7 +221,7 @@ class RegistryService:
 
         fiscal_fields = FiscalFields(t=t, s=s, fn=fn, i=i, fp=fp, n=n)
         receipt = await self.receipts_service.create(
-            owner_id=user_id,
+            owner_id=owner.id,
             crpt_id=crpt.id,
             retailer_id=retailer.id,
             shop_id=shop.id if shop else None,
@@ -248,6 +255,7 @@ class RegistryService:
         items = await self.items_service.create_many(receipt.id, items)
 
         return Registry(
+            owner=owner,
             crpt=crpt,
             receipt=receipt,
             items=items.items,

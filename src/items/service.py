@@ -44,12 +44,12 @@ class ItemsService:
 
     async def get_count(self) -> Count:
         result = await self.items_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)
 
     async def get_count_distinct(self) -> CountDistinct:
         distinct = await self.items_dao.get_count_distinct()
         count = await self.items_dao.get_count()
-        return CountDistinct(total=distinct, selectivity=distinct / count)
+        return CountDistinct(count=distinct, selectivity=distinct / count)
 
     async def get_avg_price(self) -> Count:
         result = await self.items_dao.get_avg_price()

@@ -1,7 +1,8 @@
 import re
 from typing import AsyncGenerator
 
-from sqlalchemy import MetaData
+from src.core.schemes import Count
+from sqlalchemy import MetaData, Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
@@ -36,3 +37,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Returns database session"""
     async with AsyncSessionLocal() as session:
         yield session
+
+
+async def count_by_query(db: AsyncSession, stmt: Select) -> Count:
+    """Returns count by query"""
+    stmt = select(func.count()).select_from(stmt.subquery())
+    return await db.scalar(stmt)

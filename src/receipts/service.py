@@ -2,17 +2,36 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from src.receipts.dao import ReceiptsDao
-from src.receipts.schemes import FiscalFields, Receipt
+from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
 from src.core.transactional import transactional
 from src.core.schemes import Count, Total
 from src.items.schemes import ItemList, Item
+from src.receipts.filters import ReceiptsFilter
+from fastapi_pagination import Page
 
 
 class ReceiptsService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.receipts_dao = ReceiptsDao(db)
+
+    async def get(self, filters: ReceiptsFilter) -> Page[Receipt]:
+        stmt = self.receipts_dao.build_query()
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+
+        return await apaginate(self.db, stmt)
+
+    async def get_by_owner(
+        self, owner_id: UUID7, filters: ReceiptsFilter
+    ) -> Page[Receipt]:
+        stmt = self.receipts_dao.build_query_by_owner(owner_id=owner_id)
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+
+        return await apaginate(self.db, stmt)
 
     async def get_by_id(self, receipt_id: UUID7) -> Receipt:
         result = await self.receipts_dao.get_by_id(receipt_id)
@@ -50,9 +69,14 @@ class ReceiptsService:
             )
         return ItemList(items=[Item.model_validate(item) for item in result.items])
 
+    async def get_stats(self) -> ReceiptsStats:
+        count = await self.get_count()
+        total = await self.get_total()
+        return ReceiptsStats(total=total.total, count=count.count)
+
     async def get_count(self) -> Count:
         result = await self.receipts_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)
 
     async def get_total(self) -> Total:
         result = await self.receipts_dao.get_total()
@@ -78,22 +102,17 @@ class ReceiptsService:
         )
         if not result:
             result = await self.receipts_dao.create(
-                owner_id,
-                crpt_id,
-                retailer_id,
-                shop_id,
-                employee_id,
-                fiscal_fields.t_datetime,
-                fiscal_fields.s,
-                fiscal_fields.fn,
-                fiscal_fields.i,
-                fiscal_fields.fp,
-                fiscal_fields.n,
+                owner_id=owner_id,
+                crpt_id=crpt_id,
+                retailer_id=retailer_id,
+                shop_id=shop_id,
+                employee_id=employee_id,
+                t=fiscal_fields.t_datetime,
+                s=fiscal_fields.s,
+                fn=fiscal_fields.fn,
+                i=fiscal_fields.i,
+                fp=fiscal_fields.fp,
+                n=fiscal_fields.n,
             )
 
         return Receipt.model_validate(result)
-
-    async def exists_by_employee_and_user(self, user_id: UUID7, employee_id: UUID7) -> bool:
-        result = await self.receipts_dao.exists_by_employee_and_user(user_id, employee_id)
-        return result
-

@@ -34,7 +34,7 @@ class CrptService:
 
     async def get_count(self) -> Count:
         result = await self.crpt_dao.get_count()
-        return Count(total=result)
+        return Count(count=result)
 
     async def get_from_crpt_api(self, fiscal_fields: FiscalFields) -> dict[str, Any]:
         client_kwargs = {

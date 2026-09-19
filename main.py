@@ -16,6 +16,7 @@ from src.measures.router import router as measures_router
 from src.nds.router import router as nds_router
 from src.payments.router import router as payments_router
 from src.products.router import router as products_router
+from src.receipts.admin_router import router as receipts_admin_router
 from src.receipts.router import router as receipts_router
 from src.registry.router import router as registry_router
 from src.retailers.router import router as retailers_router
@@ -52,10 +53,11 @@ app.include_router(users_router)
 
 # Core
 app.include_router(registry_router)
-app.include_router(crpt_router)
 app.include_router(crpt_admin_router)
+app.include_router(crpt_router)
 
 # Receipts
+app.include_router(receipts_admin_router)
 app.include_router(receipts_router)
 app.include_router(items_router)
 

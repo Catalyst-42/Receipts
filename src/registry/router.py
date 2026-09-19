@@ -32,7 +32,7 @@ async def create_registry(
     service: RegistryService = Depends(get_registry_service),
 ) -> Registry:
     """Registers receipt in project database"""
-    return await service.create(user.id, request)
+    return await service.create(user, request)
 
 
 @router.delete(

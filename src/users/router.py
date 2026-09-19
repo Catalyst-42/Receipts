@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 
-from src.receipts.schemes import Receipt
 from src.core.schemes import ErrorResponse
-from src.receipts.filters import ReceiptFilter
+from src.receipts.filters import ReceiptsFilter
+from src.receipts.schemes import Receipt
 from src.users.dependencies import get_user, get_users_service
 from src.users.schemes import User
 from src.users.service import UsersService
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 async def get_current_user(
     user: User = Depends(get_user),
 ) -> User:
-    """Get current user by auth cridentials"""
+    """Returns current user by auth cridentials"""
     return user
 
 
@@ -38,11 +38,12 @@ async def get_current_user(
 async def get_user_receipts(
     username: str,
     user: User = Depends(get_user),
-    filters: ReceiptFilter = FilterDepends(ReceiptFilter),
+    filters: ReceiptsFilter = FilterDepends(ReceiptsFilter),
     service: UsersService = Depends(get_users_service),
 ) -> Page[Receipt]:
-    """Get list of user receipts"""
+    """Returns list of user receipts"""
     return await service.get_receipts(user, username, filters)
+
 
 @router.get(
     "/{username}",
@@ -61,5 +62,5 @@ async def get_user_profile(
     user: User = Depends(get_user),
     service: UsersService = Depends(get_users_service),
 ) -> User:
-    """Get current user by username"""
+    """Returns current user by username"""
     return await service.get_by_username(user, username)
