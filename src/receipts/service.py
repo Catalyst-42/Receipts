@@ -1,13 +1,15 @@
 from fastapi import HTTPException, status
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi_pagination.ext.sqlalchemy import apaginate
-from src.receipts.dao import ReceiptsDao
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
+
 from src.core.transactional import transactional
-from src.items.schemes import ItemList, Item
-from src.receipts.filters import ReceiptsFilters
-from fastapi_pagination import Page
+from src.items.schemes import Item, ItemList
+from src.receipts.dao import ReceiptsDao
+from src.receipts.filters import ReceiptsFilters, ReceiptsStatsFilters
+from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
+
 
 class ReceiptsService:
     def __init__(self, db: AsyncSession):
@@ -29,6 +31,16 @@ class ReceiptsService:
         stmt = filters.sort(stmt)
 
         return await apaginate(self.db, stmt)
+
+    async def get_stats_by_owner(
+        self,
+        owner_id: UUID7,
+        filters: ReceiptsStatsFilters,
+    ) -> ReceiptsStats:
+        base = self.receipts_dao.build_query_by_owner(owner_id=owner_id)
+        base = filters.filter(base)
+
+        return await self.receipts_dao.get_stats(base)
 
     async def get_stats(self) -> ReceiptsStats:
         return await self.receipts_dao.get_stats()

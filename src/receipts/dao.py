@@ -20,11 +20,19 @@ class ReceiptsDao:
     def build_query_by_owner(self, owner_id: UUID7) -> Select:
         return select(ReceiptsOrm).where(ReceiptsOrm.owner_id == owner_id)
 
-    async def get_stats(self) -> ReceiptsStats:
+    async def get_stats(self, base: Select | None = None) -> ReceiptsStats:
+        if base is None:
+            base = select(ReceiptsOrm)
+
+        subq = base.with_only_columns(
+            ReceiptsOrm.id,
+            ReceiptsOrm.s,
+        ).subquery()
+
         stmt = select(
-            func.count(ReceiptsOrm.id),
-            func.coalesce(func.sum(ReceiptsOrm.s), 0),
-            func.coalesce(func.avg(ReceiptsOrm.s), 0),
+            func.count(subq.c.id),
+            func.coalesce(func.sum(subq.c.s), 0),
+            func.coalesce(func.avg(subq.c.s), 0),
         )
 
         result = await self.db.execute(stmt)

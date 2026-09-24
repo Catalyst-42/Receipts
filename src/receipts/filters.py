@@ -16,3 +16,11 @@ class ReceiptsFilters(Filter):
     class Constants(Filter.Constants):
         model = ReceiptsOrm
         ordering_field_name = "order_by"
+
+
+class ReceiptsStatsFilters(Filter):
+    t__gte: datetime | None = None
+    t__lte: datetime | None = None
+
+    class Constants(Filter.Constants):
+        model = ReceiptsOrm

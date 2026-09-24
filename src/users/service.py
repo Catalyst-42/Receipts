@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.jwt import create_access_token
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
-from src.receipts.filters import ReceiptsFilters
-from src.receipts.schemes import Receipt
+from src.receipts.filters import ReceiptsStatsFilters
+from src.receipts.schemes import Receipt, ReceiptsStats
 from src.receipts.service import ReceiptsService
 from src.users.dao import UsersDao
 from src.users.schemes import AccessToken, Login, Passwords, Register, User
@@ -103,7 +103,7 @@ class UsersService:
         self,
         user: User,
         username: str,
-        filters: ReceiptsFilters,
+        filters: ReceiptsStatsFilters,
     ) -> Page[Receipt]:
         owner = await self.users_dao.get_by_username(username)
         if not owner:
@@ -119,3 +119,24 @@ class UsersService:
             )
 
         return await self.receipts_service.get_by_owner(owner.id, filters)
+
+    async def get_receipts_stats(
+        self,
+        user: User,
+        username: str,
+        filters: ReceiptsStatsFilters,
+    ) -> ReceiptsStats:
+        owner = await self.users_dao.get_by_username(username)
+        if not owner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if not user.is_admin and user.id != owner.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have no rights to view this user",
+            )
+
+        return await self.receipts_service.get_stats_by_owner(owner.id, filters)

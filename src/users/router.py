@@ -3,8 +3,8 @@ from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 
 from src.core.schemes import ErrorResponse
-from src.receipts.filters import ReceiptsFilters
-from src.receipts.schemes import Receipt
+from src.receipts.filters import ReceiptsFilters, ReceiptsStatsFilters
+from src.receipts.schemes import Receipt, ReceiptsStats
 from src.users.dependencies import get_user, get_users_service
 from src.users.schemes import User
 from src.users.service import UsersService
@@ -43,6 +43,25 @@ async def get_user_receipts(
 ) -> Page[Receipt]:
     """Returns list of user receipts"""
     return await service.get_receipts(user, username, filters)
+
+
+@router.get(
+    "/{username}/receipts/stats",
+    response_model=ReceiptsStats,
+    responses={
+        401: {"model": ErrorResponse, "description": "Not authenticated"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
+        404: {"model": ErrorResponse, "description": "User not found"},
+    },
+)
+async def get_user_receipts(
+    username: str,
+    user: User = Depends(get_user),
+    filters: ReceiptsStatsFilters = FilterDepends(ReceiptsStatsFilters),
+    service: UsersService = Depends(get_users_service),
+) -> ReceiptsStats:
+    """Returns stats of user receipts"""
+    return await service.get_receipts_stats(user, username, filters)
 
 
 @router.get(
