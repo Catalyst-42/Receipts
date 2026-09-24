@@ -17,9 +17,7 @@ if TYPE_CHECKING:
 class ShopsOrm(Base):
     """Table of all shops by retailers"""
 
-    __table_args__ = (
-        UniqueConstraint("retailer_id", "address"),
-    )
+    __table_args__ = (UniqueConstraint("retailer_id", "address"),)
 
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
@@ -29,7 +27,7 @@ class ShopsOrm(Base):
     )
     retailer_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("retailers_orm.id", ondelete="CASCADE"),
+        ForeignKey("retailers.id", ondelete="CASCADE"),
         index=True,
         nullable=False,
         comment="Link on retailer - owner of this shop",

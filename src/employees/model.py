@@ -36,14 +36,14 @@ class EmployeesOrm(Base):
     )
     retailer_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("retailers_orm.id", ondelete="CASCADE"),
+        ForeignKey("retailers.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
         comment="Foreign key to retailers table",
     )
     shop_id: Mapped[UUID7 | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("shops_orm.id", ondelete="CASCADE"),
+        ForeignKey("shops.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
         comment="Foreign key to shops table",

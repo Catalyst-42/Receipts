@@ -1,12 +1,12 @@
 import re
 from typing import AsyncGenerator
 
-from src.core.schemes import Count
 from sqlalchemy import MetaData, Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 from src.config import settings
+from src.core.schemes import Count
 
 
 class Base(DeclarativeBase):
@@ -23,7 +23,9 @@ class Base(DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         """Make tablename from class name"""
-        return re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
+        name = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
+        name = name.removesuffix("_orm")
+        return name
 
 
 # Session
