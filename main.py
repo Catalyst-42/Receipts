@@ -11,6 +11,7 @@ from src.core.router import router as core_router
 from src.crpt.admin_router import router as crpt_admin_router
 from src.crpt.router import router as crpt_router
 from src.employees.router import router as employees_router
+from src.employees.admin_router import router as employees_admin_router
 from src.items.admin_router import router as items_admin_router
 from src.items.router import router as items_router
 from src.measures.router import router as measures_router
@@ -56,6 +57,7 @@ app.include_router(receipts_admin_router)
 app.include_router(items_admin_router)
 app.include_router(retailers_admin_router)
 app.include_router(shops_admin_router)
+app.include_router(employees_admin_router)
 
 # Users
 app.include_router(auth_router)

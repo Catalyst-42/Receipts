@@ -26,7 +26,6 @@ class ReceiptsService:
     ) -> Page[Receipt]:
         stmt = self.receipts_dao.build_query_by_owner(owner_id=owner_id)
         stmt = filters.filter(stmt)
-        
         stmt = filters.sort(stmt)
 
         return await apaginate(self.db, stmt)

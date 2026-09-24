@@ -1,9 +1,12 @@
 from fastapi import HTTPException, status
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
 from src.employees.dao import EmployeesDao
+from src.employees.filters import EmployeesFilters
 from src.employees.schemes import Employee, EmployeeList, EmployeesStats
 
 
@@ -11,6 +14,13 @@ class EmployeesService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.employees_dao = EmployeesDao(db)
+
+    async def get(self, filters: EmployeesFilters) -> Page[Employee]:
+        stmt = self.employees_dao.build_query()
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+
+        return await apaginate(self.db, stmt)
 
     async def get_all(self) -> EmployeeList:
         result = await self.employees_dao.get_all()
