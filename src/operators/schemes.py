@@ -3,23 +3,23 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 from src.core.schemes import Count
 
 
-class EmployeesStats(Count):
+class OperatorsStats(Count):
     pass
 
 
-class EmployeeId(BaseModel):
-    employee_id: UUID7 = Field(
+class OperatorId(BaseModel):
+    operator_id: UUID7 = Field(
         example="01a04f1b-cb71-7123-b575-91edea76f251",
-        description="Unique identifier for the employee",
+        description="Unique identifier for the operator",
     )
 
 
-class Employee(BaseModel):
+class Operator(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
         example="01a04f1b-cb71-7123-b575-91edea76f251",
-        description="Unique identifier for the employee",
+        description="Unique identifier for the operator",
     )
     retailer_id: UUID7 = Field(
         example="01a04f17-5b65-729e-abdf-d20f7c3f7567",
@@ -27,7 +27,7 @@ class Employee(BaseModel):
     )
     shop_id: UUID7 | None = Field(
         example="01a04f1b-cb6e-7369-8c90-95f53acfe703",
-        description="Link to shops where this employee works",
+        description="Link to shops where this operator works",
     )
     name: str = Field(
         example="Самообслуживание 2",
@@ -35,5 +35,5 @@ class Employee(BaseModel):
     )
 
 
-class EmployeeList(BaseModel):
-    items: list[Employee]
+class OperatorList(BaseModel):
+    items: list[Operator]

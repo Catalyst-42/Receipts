@@ -21,7 +21,7 @@ import src.items.model  # noqa: F401
 # Retailers
 import src.retailers.model  # noqa: F401
 import src.shops.model  # noqa: F401
-import src.employees.model  # noqa: F401
+import src.operators.model  # noqa: F401
 
 # Directories
 import src.measures.model  # noqa: F401

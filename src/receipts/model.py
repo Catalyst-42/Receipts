@@ -19,7 +19,7 @@ from src.core.db import Base
 
 if TYPE_CHECKING:
     from src.crpt.model import CrptOrm
-    from src.employees.model import EmployeesOrm
+    from src.operators.model import OperatorsOrm
     from src.items.model import ItemsOrm
     from src.retailers.model import RetailersOrm
     from src.shops.model import ShopsOrm
@@ -65,12 +65,12 @@ class ReceiptsOrm(Base):
         nullable=True,
         comment="Reference to shop, where receipt was made",
     )
-    employee_id: Mapped[UUID7 | None] = mapped_column(
+    operator_id: Mapped[UUID7 | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("employees.id", ondelete="CASCADE"),
+        ForeignKey("operators.id", ondelete="CASCADE"),
         index=True,
         nullable=True,
-        comment="Reference to employee, worked on this receipt",
+        comment="Reference to operator, worked on this receipt",
     )
 
     # Fiscal fields
@@ -126,8 +126,8 @@ class ReceiptsOrm(Base):
         back_populates="receipts",
         lazy="selectin",
     )
-    employee: Mapped["EmployeesOrm"] = relationship(
-        "EmployeesOrm",
+    operator: Mapped["OperatorsOrm"] = relationship(
+        "OperatorsOrm",
         back_populates="receipts",
         lazy="selectin",
     )

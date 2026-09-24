@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 from src.users.schemes import Owner
 from src.crpt.schemes import Crpt
-from src.employees.schemes import Employee
+from src.operators.schemes import Operator
 from src.items.schemes import Item
 from src.receipts.schemes import Receipt
 from src.retailers.schemes import Retailer
@@ -16,4 +16,4 @@ class Registry(BaseModel):
     items: list[Item]
     retailer: Retailer
     shop: Shop | None
-    employee: Employee | None
+    operator: Operator | None

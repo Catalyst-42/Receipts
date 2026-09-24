@@ -123,10 +123,10 @@ class Receipt(BaseModel):
         example="01a04f1b-cb6e-7369-8c90-95f53acfe703",
         description="Reference to the shop where receipt was made",
     )
-    employee_id: UUID7 | None = Field(
+    operator_id: UUID7 | None = Field(
         default=None,
         example="01a04f1b-cb71-7123-b575-91edea76f251",
-        description="Reference to the employee who made this receipt",
+        description="Reference to the operator who made this receipt",
     )
 
     t: datetime = Field(

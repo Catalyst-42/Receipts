@@ -11,8 +11,8 @@ from src.core.transactional import transactional
 from src.users.schemes import Owner
 from src.crpt.schemes import Crpt
 from src.crpt.service import CrptService
-from src.employees.schemes import Employee
-from src.employees.service import EmployeesService
+from src.operators.schemes import Operator
+from src.operators.service import OperatorsService
 from src.items.schemes import Item
 from src.items.service import ItemsService
 from src.receipts.schemes import FiscalFields, Receipt
@@ -32,7 +32,7 @@ class RegistryService:
         self.items_service = ItemsService(db)
         self.retailers_service = RetailersService(db)
         self.shops_service = ShopsService(db)
-        self.employees_service = EmployeesService(db)
+        self.operators_service = OperatorsService(db)
 
     def _str_clean(self, string: str | None) -> str | None:
         """Strips input and removes space duplication"""
@@ -112,7 +112,7 @@ class RegistryService:
         items = receipt.items
         retailer = receipt.shop.retailer
         shop = receipt.shop
-        employee = receipt.employee
+        operator = receipt.operator
 
         return Registry(
             owner=Owner.model_validate(owner),
@@ -121,7 +121,7 @@ class RegistryService:
             items=[Item.model_validate(item) for item in items],
             retailer=Retailer.model_validate(retailer),
             shop=Shop.model_validate(shop) if shop else None,
-            employee=Employee.model_validate(employee) if employee else None,
+            operator=Operator.model_validate(operator) if operator else None,
         )
 
     async def get_by_receipt_id(self, receipt_id: UUID7) -> Registry:
@@ -137,7 +137,7 @@ class RegistryService:
         items = receipt.items
         retailer = receipt.retailer
         shop = receipt.shop
-        employee = receipt.employee
+        operator = receipt.operator
 
         return Registry(
             owner=Owner.model_validate(owner),
@@ -146,7 +146,7 @@ class RegistryService:
             items=[Item.model_validate(item) for item in items],
             retailer=Retailer.model_validate(retailer),
             shop=Shop.model_validate(shop) if shop else None,
-            employee=Employee.model_validate(employee) if employee else None,
+            operator=Operator.model_validate(operator) if operator else None,
         )
 
     @transactional
@@ -165,7 +165,7 @@ class RegistryService:
             items = receipt.items
             retailer = receipt.retailer
             shop = receipt.shop
-            employee = receipt.employee
+            operator = receipt.operator
 
             return Registry(
                 owner=Owner.model_validate(owner),
@@ -174,7 +174,7 @@ class RegistryService:
                 items=[Item.model_validate(item) for item in items],
                 retailer=Retailer.model_validate(retailer),
                 shop=Shop.model_validate(shop) if shop else None,
-                employee=Employee.model_validate(employee) if employee else None,
+                operator=Operator.model_validate(operator) if operator else None,
             )
 
         dump = await self.crpt_service.get_from_crpt_api(fiscal_fields)
@@ -196,9 +196,9 @@ class RegistryService:
             )
 
         name = dump["fiscalData"]["receipt"].get("operator", None)
-        employee = None
+        operator = None
         if name:
-            employee = await self.employees_service.create(
+            operator = await self.operators_service.create(
                 retailer_id=retailer.id,
                 shop_id=shop.id if shop else None,
                 name=self._str_clean(name),
@@ -225,7 +225,7 @@ class RegistryService:
             crpt_id=crpt.id,
             retailer_id=retailer.id,
             shop_id=shop.id if shop else None,
-            employee_id=employee.id if employee else None,
+            operator_id=operator.id if operator else None,
             fiscal_fields=fiscal_fields,
         )
 
@@ -261,7 +261,7 @@ class RegistryService:
             items=items.items,
             retailer=retailer,
             shop=shop,
-            employee=employee,
+            operator=operator,
         )
 
     @transactional
@@ -283,7 +283,7 @@ class RegistryService:
         items = receipt.items
         retailer = receipt.retailer
         shop = receipt.shop
-        employee = receipt.employee
+        operator = receipt.operator
 
         if receipt.owner_id != user.id and not user.is_admin:
             raise HTTPException(
@@ -291,7 +291,7 @@ class RegistryService:
                 detail="You have not rights to delete this record",
             )
 
-        # Skips orphan retailers, shops and employees on deletion
+        # Skips orphan retailers, shops and operators on deletion
         crpt = await self.crpt_service.crpt_dao.delete(crpt)
 
         return Registry(
@@ -300,5 +300,5 @@ class RegistryService:
             items=[Item.model_validate(item) for item in items],
             retailer=Retailer.model_validate(retailer),
             shop=Shop.model_validate(shop) if shop else None,
-            employee=Employee.model_validate(employee) if employee else None,
+            operator=Operator.model_validate(operator) if operator else None,
         )

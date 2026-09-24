@@ -88,7 +88,7 @@ class ReceiptsService:
         crpt_id: UUID7,
         retailer_id: UUID7,
         shop_id: UUID7 | None,
-        employee_id: UUID7 | None,
+        operator_id: UUID7 | None,
         fiscal_fields: FiscalFields,
     ) -> Receipt:
         result = await self.receipts_dao.get_by_fiscal_fields(
@@ -105,7 +105,7 @@ class ReceiptsService:
                 crpt_id=crpt_id,
                 retailer_id=retailer_id,
                 shop_id=shop_id,
-                employee_id=employee_id,
+                operator_id=operator_id,
                 t=fiscal_fields.t_datetime,
                 s=fiscal_fields.s,
                 fn=fiscal_fields.fn,

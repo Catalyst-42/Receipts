@@ -14,13 +14,13 @@ if TYPE_CHECKING:
     from src.shops.model import ShopsOrm
 
 
-class EmployeesOrm(Base):
+class OperatorsOrm(Base):
     """Table of all employess by shops"""
 
     __table_args__ = (
         UniqueConstraint("shop_id", "name"),
         Index(
-            "ix_employees_retailer_name_null_shop",
+            "ix_operators_retailer_name_null_shop",
             "retailer_id",
             "name",
             unique=True,
@@ -32,7 +32,7 @@ class EmployeesOrm(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=lambda: uuid7(),
-        comment="Unique identifier for the employee",
+        comment="Unique identifier for the operator",
     )
     retailer_id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
@@ -51,22 +51,22 @@ class EmployeesOrm(Base):
     name: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment="Employee name",
+        comment="Operator name",
     )
 
     # Relations
     retailer: Mapped["RetailersOrm"] = relationship(
         "RetailersOrm",
-        back_populates="employees",
+        back_populates="operators",
         lazy="selectin",
     )
     shop: Mapped["ShopsOrm"] = relationship(
         "ShopsOrm",
-        back_populates="employees",
+        back_populates="operators",
         lazy="selectin",
     )
     receipts: Mapped[list["ReceiptsOrm"]] = relationship(
         "ReceiptsOrm",
-        back_populates="employee",
+        back_populates="operator",
         lazy="selectin",
     )
