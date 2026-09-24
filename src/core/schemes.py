@@ -22,7 +22,7 @@ class Status(BaseModel):
 
 
 class Average(BaseModel):
-    avg: Decimal = Field(
+    average: Decimal = Field(
         example=Decimal("480.60"),
         description="Average value",
     )
@@ -37,6 +37,11 @@ class Count(BaseModel):
 
 
 class CountDistinct(Count):
+    distinct: int = Field(
+        example=872,
+        description="Total count of unique itmes",
+        ge=0,
+    )
     selectivity: float = Field(
         example=0.5899481451934583,
         description="Fraction of unique items by size of group",

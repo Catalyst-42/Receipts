@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.payments.model import PaymentsOrm
+from src.payments.schemes import PaymentsStats
 
 
 class PaymentsDao:
@@ -22,11 +23,11 @@ class PaymentsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> PaymentsStats:
         stmt = select(func.count()).select_from(PaymentsOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return PaymentsStats(count=result.scalar())
 
     async def create(
         self,

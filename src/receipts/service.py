@@ -1,16 +1,13 @@
 from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from src.receipts.dao import ReceiptsDao
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
+from src.receipts.schemes import FiscalFields, Receipt, ReceiptId, ReceiptsStats
 from src.core.transactional import transactional
-from src.core.schemes import Count, Total
 from src.items.schemes import ItemList, Item
 from src.receipts.filters import ReceiptsFilter
 from fastapi_pagination import Page
-
 
 class ReceiptsService:
     def __init__(self, db: AsyncSession):
@@ -29,9 +26,13 @@ class ReceiptsService:
     ) -> Page[Receipt]:
         stmt = self.receipts_dao.build_query_by_owner(owner_id=owner_id)
         stmt = filters.filter(stmt)
+        
         stmt = filters.sort(stmt)
 
         return await apaginate(self.db, stmt)
+
+    async def get_stats(self) -> ReceiptsStats:
+        return await self.receipts_dao.get_stats()
 
     async def get_by_id(self, receipt_id: UUID7) -> Receipt:
         result = await self.receipts_dao.get_by_id(receipt_id)
@@ -68,19 +69,6 @@ class ReceiptsService:
                 detail=f"Receipt with id {receipt_id} was not found",
             )
         return ItemList(items=[Item.model_validate(item) for item in result.items])
-
-    async def get_stats(self) -> ReceiptsStats:
-        count = await self.get_count()
-        total = await self.get_total()
-        return ReceiptsStats(total=total.total, count=count.count)
-
-    async def get_count(self) -> Count:
-        result = await self.receipts_dao.get_count()
-        return Count(count=result)
-
-    async def get_total(self) -> Total:
-        result = await self.receipts_dao.get_total()
-        return Total(total=result)
 
     @transactional
     async def create(

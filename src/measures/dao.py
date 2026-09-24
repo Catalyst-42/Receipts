@@ -1,9 +1,10 @@
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.measures.models import MeasuresOrm
+from src.measures.schemes import MeasuresStats
 
 
 class MeasuresDao:
@@ -21,6 +22,12 @@ class MeasuresDao:
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_stats(self) -> MeasuresStats:
+        stmt = select(func.count()).select_from(MeasuresOrm)
+
+        result = await self.db.execute(stmt)
+        return MeasuresStats(count=result.scalar())
 
     async def create(
         self,

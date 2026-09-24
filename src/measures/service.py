@@ -1,9 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.measures.dao import MeasuresDao
-from src.measures.schemes import Measure, MeasureList
+from src.measures.schemes import Measure, MeasureList, MeasuresStats
 
 
 class MeasuresService:
@@ -26,6 +25,5 @@ class MeasuresService:
 
         return Measure.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.measures_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> MeasuresStats:
+        return await self.measures_dao.get_stats()

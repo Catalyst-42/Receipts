@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.nds.model import NdsOrm
+from src.nds.schemes import NdsStats
 
 
 class NdsDao:
@@ -22,11 +23,11 @@ class NdsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> NdsStats:
         stmt = select(func.count()).select_from(NdsOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return NdsStats(count=result.scalar())
 
     async def create(
         self,

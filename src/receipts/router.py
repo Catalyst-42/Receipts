@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, Path, Query
 from fastapi.routing import APIRouter
 
-from src.core.schemes import Count, ErrorResponse, Total
+from src.core.schemes import ErrorResponse
 from src.items.schemes import ItemList
 from src.receipts.dependencies import get_receipts_service
 from src.receipts.schemes import FiscalFields, Receipt, ReceiptId, ReceiptsStats
@@ -12,37 +12,13 @@ from src.receipts.service import ReceiptsService
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 
 
-
-@router.get(
-    "/stats/count",
-    response_model=Count,
-)
-async def get_receipts_count(
-    receipt_service: ReceiptsService = Depends(get_receipts_service),
-) -> Count:
-    """Returns total count of receipts"""
-    return await receipt_service.get_count()
-
-
-@router.get(
-    "/stats/total",
-    response_model=Total,
-)
-async def get_receipts_total(
-    receipt_service: ReceiptsService = Depends(get_receipts_service),
-) -> Total:
-    """Returns total sum of prices of receipts"""
-    return await receipt_service.get_total()
-
-@router.get(
-    "/stats",
-    response_model=ReceiptsStats,
-)
+@router.get("/stats", response_model=ReceiptsStats)
 async def get_receipts_stats(
     receipt_service: ReceiptsService = Depends(get_receipts_service),
 ) -> ReceiptsStats:
-    """Returns stats for all receipts"""
+    """Returns statistics for receipt records."""
     return await receipt_service.get_stats()
+
 
 @router.get(
     "/by-fiscal-fields",

@@ -1,5 +1,11 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.core.schemes import Count
+
+
+class PaymentsStats(Count):
+    pass
+
 
 class PaymentId(BaseModel):
     payment_id: int = Field(

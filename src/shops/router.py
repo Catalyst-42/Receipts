@@ -5,9 +5,9 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import Count, ErrorResponse
+from src.core.schemes import ErrorResponse
 from src.items.schemes import ItemList
-from src.shops.schemes import Shop, ShopId
+from src.shops.schemes import Shop, ShopId, ShopsStats
 from src.shops.service import ShopsService
 
 router = APIRouter(prefix="/shops", tags=["Shops"])
@@ -18,14 +18,14 @@ def get_shops_service(db: AsyncSession = Depends(get_db)):
 
 
 @router.get(
-    "/stats/count",
-    response_model=Count,
+    "/stats",
+    response_model=ShopsStats,
 )
-async def get_receipts_count(
+async def get_shops_stats(
     shop_service: ShopsService = Depends(get_shops_service),
-) -> Count:
-    """Returns total count of shops in database"""
-    return await shop_service.get_count()
+) -> ShopsStats:
+    """Returns statistics for shop records."""
+    return await shop_service.get_stats()
 
 
 @router.get(

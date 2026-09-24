@@ -1,9 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.payments.dao import PaymentsDao
-from src.payments.schemes import Payment, PaymentList
+from src.payments.schemes import Payment, PaymentList, PaymentsStats
 
 
 class PaymentsService:
@@ -26,6 +25,5 @@ class PaymentsService:
 
         return Payment.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.payments_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> PaymentsStats:
+        return await self.payments_dao.get_stats()

@@ -7,7 +7,7 @@ from src.crpt.service import CrptService
 from src.users.dependencies import get_admin
 from src.users.schemes import User
 
-router = APIRouter(prefix="/admin/crpt", tags=["CRPT"])
+router = APIRouter(prefix="/admin/crpt", tags=["Admin"])
 
 
 @router.get("/export")

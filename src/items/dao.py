@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
+from src.items.schemes import ItemsStats
 from src.receipts.model import ReceiptsOrm
 
 
@@ -51,33 +52,25 @@ class ItemsDao:
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def get_count(self) -> int:
-        stmt = select(func.count()).select_from(ItemsOrm)
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_count_distinct(self) -> int:
-        stmt = select(func.count(func.distinct(ItemsOrm.name)))
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_avg_price(self) -> Decimal:
-        stmt = select(func.avg(ItemsOrm.price))
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_median_price(self) -> Decimal:
+    async def get_stats(self) -> ItemsStats:
         stmt = select(
+            func.count(ItemsOrm.id),
+            func.count(func.distinct(ItemsOrm.name)),
+            func.avg(ItemsOrm.price),
             func.percentile_cont(0.5)
             .within_group(ItemsOrm.price.desc())
-            .label("median")
+            .label("median"),
         )
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        count, distinct, average, median = result.one()
+        return ItemsStats(
+            count=count,
+            distinct=distinct,
+            selectivity=distinct / count if count else 0,
+            average=average,
+            median=median,
+        )
 
     async def create(
         self,

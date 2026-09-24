@@ -1,5 +1,11 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.core.schemes import Count
+
+
+class NdsStats(Count):
+    pass
+
 
 class NdsId(BaseModel):
     nds_id: int = Field(

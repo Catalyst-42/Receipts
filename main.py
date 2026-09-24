@@ -47,17 +47,19 @@ if settings.ssl_keyfile and settings.ssl_certfile:
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(core_router)
 
+# Admin
+app.include_router(crpt_admin_router)
+app.include_router(receipts_admin_router)
+
 # Users
 app.include_router(auth_router)
 app.include_router(users_router)
 
 # Core
 app.include_router(registry_router)
-app.include_router(crpt_admin_router)
 app.include_router(crpt_router)
 
 # Receipts
-app.include_router(receipts_admin_router)
 app.include_router(receipts_router)
 app.include_router(items_router)
 

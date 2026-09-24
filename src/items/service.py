@@ -5,10 +5,10 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Average, CountDistinct, Count, Median
+from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.items.dao import ItemsDao
-from src.items.schemes import Item, ItemList
+from src.items.schemes import Item, ItemList, ItemsStats
 
 
 class ItemsService:
@@ -42,22 +42,8 @@ class ItemsService:
 
         return Item.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.items_dao.get_count()
-        return Count(count=result)
-
-    async def get_count_distinct(self) -> CountDistinct:
-        distinct = await self.items_dao.get_count_distinct()
-        count = await self.items_dao.get_count()
-        return CountDistinct(count=distinct, selectivity=distinct / count)
-
-    async def get_avg_price(self) -> Count:
-        result = await self.items_dao.get_avg_price()
-        return Average(avg=result)
-
-    async def get_median_price(self) -> Median:
-        result = await self.items_dao.get_median_price()
-        return Median(median=result)
+    async def get_stats(self) -> ItemsStats:
+        return await self.items_dao.get_stats()
 
     @transactional
     async def create(

@@ -1,5 +1,11 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.core.schemes import Count
+
+
+class MeasuresStats(Count):
+    pass
+
 
 class MeasureId(BaseModel):
     measure_id: int = Field(

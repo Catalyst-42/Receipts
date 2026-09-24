@@ -62,5 +62,5 @@ async def get_user_profile(
     user: User = Depends(get_user),
     service: UsersService = Depends(get_users_service),
 ) -> User:
-    """Returns current user by username"""
+    """Returns user by username"""
     return await service.get_by_username(user, username)

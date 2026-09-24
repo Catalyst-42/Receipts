@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.retailers.schemes import Retailer, RetailerId
+from src.retailers.schemes import Retailer, RetailerId, RetailersStats
 from src.retailers.service import RetailersService
-from src.core.schemes import Count
 from src.items.schemes import ItemList
 
 router = APIRouter(prefix="/retailers", tags=["Retailers"])
@@ -19,14 +18,14 @@ def get_retailers_service(db: AsyncSession = Depends(get_db)):
 
 
 @router.get(
-    "/stats/count",
-    response_model=Count,
+    "/stats",
+    response_model=RetailersStats,
 )
-async def get_retailers_count(
+async def get_retailers_stats(
     retailers_service: RetailersService = Depends(get_retailers_service),
-) -> Count:
-    """Returns total count of retailers in database"""
-    return await retailers_service.get_count()
+) -> RetailersStats:
+    """Returns statistics for retailer records."""
+    return await retailers_service.get_stats()
 
 
 @router.get(

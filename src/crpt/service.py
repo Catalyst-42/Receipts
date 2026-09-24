@@ -9,9 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
-from src.crpt.schemes import Crpt, CrptList
+from src.crpt.schemes import Crpt, CrptList, CrptStats
 from src.receipts.schemes import FiscalFields
-from src.core.schemes import Count
 
 class CrptService:
     def __init__(self, db: AsyncSession):
@@ -32,9 +31,8 @@ class CrptService:
 
         return Crpt.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.crpt_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> CrptStats:
+        return await self.crpt_dao.get_stats()
 
     async def get_from_crpt_api(self, fiscal_fields: FiscalFields) -> dict[str, Any]:
         client_kwargs = {

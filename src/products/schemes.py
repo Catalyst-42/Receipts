@@ -1,5 +1,11 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.core.schemes import Count
+
+
+class ProductsStats(Count):
+    pass
+
 
 class GetProductByIdRequest(BaseModel):
     product_id: int = Field(

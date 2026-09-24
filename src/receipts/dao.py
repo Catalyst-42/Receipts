@@ -1,9 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Sequence
+from zoneinfo import ZoneInfo
 
 from fastapi_pagination import Page
-from src.receipts.schemes import Receipt
+from src.receipts.schemes import Receipt, ReceiptsStats
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy import Select, exists, func, select
@@ -20,9 +21,19 @@ class ReceiptsDao:
     def build_query(self) -> Select:
         return select(ReceiptsOrm)
 
-    def build_query_by_owner(
-        self, owner_id: UUID7) -> Select:
+    def build_query_by_owner(self, owner_id: UUID7) -> Select:
         return select(ReceiptsOrm).where(ReceiptsOrm.owner_id == owner_id)
+
+    async def get_stats(self) -> ReceiptsStats:
+        stmt = select(
+            func.count(ReceiptsOrm.id),
+            func.coalesce(func.sum(ReceiptsOrm.s), 0),
+            func.coalesce(func.avg(ReceiptsOrm.s), 0),
+        )
+
+        result = await self.db.execute(stmt)
+        count, total, average = result.one()
+        return ReceiptsStats(count=count, total=total, average=average)
 
     async def get_all(self) -> Sequence[ReceiptsOrm]:
         stmt = select(ReceiptsOrm)
@@ -56,18 +67,6 @@ class ReceiptsDao:
 
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-
-    async def get_count(self) -> int:
-        stmt = select(func.count()).select_from(ReceiptsOrm)
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
-
-    async def get_total(self) -> Decimal:
-        stmt = select(func.sum(ReceiptsOrm.s))
-
-        result = await self.db.execute(stmt)
-        return result.scalar()
 
     async def create(
         self,

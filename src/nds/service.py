@@ -3,7 +3,7 @@ from src.nds.dao import NdsDao
 
 from src.nds.schemes import Nds, NdsList
 from fastapi import HTTPException, status
-from src.core.schemes import Count
+from src.nds.schemes import NdsStats
 
 
 class NdsService:
@@ -26,6 +26,5 @@ class NdsService:
 
         return Nds.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.nds_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> NdsStats:
+        return await self.nds_dao.get_stats()

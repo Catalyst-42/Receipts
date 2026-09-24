@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.model import ProductsOrm
+from src.products.schemes import ProductsStats
 
 
 class ProductsDao:
@@ -22,11 +23,11 @@ class ProductsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> ProductsStats:
         stmt = select(func.count()).select_from(ProductsOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return ProductsStats(count=result.scalar())
 
     async def create(
         self,

@@ -2,8 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.dao import ProductsDao
-from src.products.schemes import Product, ProductList
-from src.core.schemes import Count
+from src.products.schemes import Product, ProductList, ProductsStats
 
 
 class ProductsService:
@@ -25,6 +24,5 @@ class ProductsService:
 
         return Product.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.retailers_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> ProductsStats:
+        return await self.products_dao.get_stats()

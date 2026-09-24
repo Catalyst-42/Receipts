@@ -5,6 +5,7 @@ from sqlalchemy import func, select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crpt.models import CrptOrm
+from src.crpt.schemes import CrptStats
 
 
 class CrptDao:
@@ -35,11 +36,11 @@ class CrptDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> CrptStats:
         stmt = select(func.count()).select_from(CrptOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return CrptStats(count=result.scalar())
 
     async def create(self, dump: dict[str, Any]) -> CrptOrm:
         result = CrptOrm(

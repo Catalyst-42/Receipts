@@ -222,10 +222,26 @@ function updateAuthUI() {
 
 // Formatting helpers
 function formatNumber(num) {
+  if (num === null || num === undefined) return '0';
   const str = num.toString();
-  if (str.endsWith('.00')) {
-    return str.replace('.00', '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  
+  // Handle decimal numbers - round to 2 decimal places and format properly
+  if (str.includes('.')) {
+    const parts = str.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1] ? parts[1].substring(0, 2) : '00';
+    
+    // Pad decimal part to 2 digits
+    if (decimalPart.length === 1) decimalPart += '0';
+    if (decimalPart.length === 0) decimalPart = '00';
+    
+    // Format integer part with spaces
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    
+    return `${integerPart}.${decimalPart}`;
   }
+  
+  // Handle integers - add space separators
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
@@ -311,7 +327,7 @@ async function fetchReceiptData(qrCode) {
 
   try {
     const params = new URLSearchParams(qrCode);
-    const url = `./registry/by-fiscal-fields?${params.toString()}`;
+    const url = `/registry/by-fiscal-fields?${params.toString()}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -465,7 +481,7 @@ function stopScannerInternal() {
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('./receipts/stats/count', { headers: getAuthHeaders() });
+    const response = await fetch('/receipts/stats/count', { headers: getAuthHeaders() });
     const data = await response.json();
     receiptCountDiv.textContent = data.total;
   } catch (error) {

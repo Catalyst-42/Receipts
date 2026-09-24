@@ -19,6 +19,21 @@ def get_registry_service(db: AsyncSession = Depends(get_db)):
     return RegistryService(db)
 
 
+@router.get(
+    "/by-fiscal-fields",
+    response_model=Registry,
+    responses={
+        404: {"model": ErrorResponse, "description": "Registry not found"},
+    },
+)
+async def get_registry_by_fiscal_fields(
+    request: Annotated[FiscalFields, Query()],
+    service: RegistryService = Depends(get_registry_service),
+) -> Registry:
+    """Returns registry of a receipt found by fiscal fields"""
+    return await service.get(request)
+
+
 @router.post(
     "/by-fiscal-fields",
     response_model=Registry,
@@ -49,21 +64,6 @@ async def delete_registry(
 ) -> Registry:
     """Deletes records of a registry"""
     return await service.delete(user, request)
-
-
-@router.get(
-    "/by-fiscal-fields",
-    response_model=Registry,
-    responses={
-        404: {"model": ErrorResponse, "description": "Registry not found"},
-    },
-)
-async def get_registry_by_fiscal_fields(
-    request: Annotated[FiscalFields, Query()],
-    service: RegistryService = Depends(get_registry_service),
-) -> Registry:
-    """Returns registry of a receipt found by fiscal fields"""
-    return await service.get(request)
 
 
 @router.get(

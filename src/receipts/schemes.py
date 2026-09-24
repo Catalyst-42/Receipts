@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from src.core.schemes import Count, Total
 
 from pydantic import (
     UUID7,
@@ -11,10 +10,12 @@ from pydantic import (
     field_validator,
     ConfigDict,
 )
+from src.core.schemes import Count, Total, Average
 
-class ReceiptsStats(Count, Total):
+
+class ReceiptsStats(Count, Total, Average):
     pass
-    
+
 
 class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(

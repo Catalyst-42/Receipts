@@ -60,6 +60,7 @@ class User(BaseModel):
         description="Flag indicating if user is admin",
     )
 
+
 class Owner(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

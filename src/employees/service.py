@@ -2,10 +2,9 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.employees.dao import EmployeesDao
-from src.employees.schemes import Employee, EmployeeList
+from src.employees.schemes import Employee, EmployeeList, EmployeesStats
 
 
 class EmployeesService:
@@ -28,9 +27,8 @@ class EmployeesService:
 
         return Employee.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.employees_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> EmployeesStats:
+        return await self.employees_dao.get_stats()
 
     @transactional
     async def create(

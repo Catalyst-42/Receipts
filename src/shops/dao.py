@@ -3,6 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.shops.model import ShopsOrm
+from src.shops.schemes import ShopsStats
 
 
 class ShopsDao:
@@ -15,11 +16,11 @@ class ShopsDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> ShopsStats:
         stmt = select(func.count()).select_from(ShopsOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return ShopsStats(count=result.scalar())
 
     async def get_by_retailer_id_and_address(
         self, retailer_id: UUID7, address: str | None

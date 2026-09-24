@@ -2,12 +2,11 @@ from fastapi import HTTPException, status
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.items.schemes import Item, ItemList
 from src.items.service import ItemsService
 from src.shops.dao import ShopsDao
-from src.shops.schemes import Shop, ShopList
+from src.shops.schemes import Shop, ShopList, ShopsStats
 
 
 class ShopsService:
@@ -31,9 +30,8 @@ class ShopsService:
 
         return Shop.model_validate(result)
 
-    async def get_count(self) -> Count:
-        result = await self.shops_dao.get_count()
-        return Count(count=result)
+    async def get_stats(self) -> ShopsStats:
+        return await self.shops_dao.get_stats()
 
     async def get_items(self, shop_id: UUID7) -> ItemList:
         result = await self.items_service.get_all_by_shop_id(shop_id)

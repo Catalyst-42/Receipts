@@ -11,7 +11,7 @@ from src.users.schemes import User
 from src.receipts.filters import ReceiptsFilter
 from src.receipts.schemes import Receipt
 
-router = APIRouter(prefix="/admin/receipts", tags=["Receipts"])
+router = APIRouter(prefix="/admin/receipts", tags=["Admin"])
 
 
 @router.get("/")

@@ -6,15 +6,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
 from src.core.schemes import ErrorResponse
-from src.nds.schemes import NdsId, Nds, NdsList
+from src.nds.schemes import NdsId, Nds, NdsList, NdsStats
 from src.nds.service import NdsService
-from src.core.schemes import Count
 
 router = APIRouter(prefix="/nds", tags=["Nds"])
 
 
 def get_measures_service(db: AsyncSession = Depends(get_db)):
     return NdsService(db)
+
+
+@router.get(
+    "/stats",
+    response_model=NdsStats,
+)
+async def get_nds_stats(
+    nds_service: NdsService = Depends(get_measures_service),
+) -> NdsStats:
+    """Returns statistics for VAT records."""
+    return await nds_service.get_stats()
 
 
 @router.get("/", response_model=NdsList)
@@ -24,17 +34,6 @@ async def get_nds_rates(
     """Returns all directory of nds rates"""
     result = await nds_service.get_all()
     return result
-
-
-@router.get(
-    "/stats/count",
-    response_model=Count,
-)
-async def get_receipts_count(
-    nds_service: NdsService = Depends(get_measures_service),
-) -> Count:
-    """Returns total count of nds types in database"""
-    return await nds_service.get_count()
 
 
 @router.get(

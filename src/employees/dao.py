@@ -3,6 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.employees.model import EmployeesOrm
+from src.employees.schemes import EmployeesStats
 
 
 class EmployeesDao:
@@ -34,11 +35,11 @@ class EmployeesDao:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_count(self) -> int:
+    async def get_stats(self) -> EmployeesStats:
         stmt = select(func.count()).select_from(EmployeesOrm)
 
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return EmployeesStats(count=result.scalar())
 
     async def create(
         self, retailer_id: UUID7 | None, shop_id: UUID7, name: str

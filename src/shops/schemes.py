@@ -1,5 +1,11 @@
 from pydantic import UUID7, BaseModel, ConfigDict, Field
 
+from src.core.schemes import Count
+
+
+class ShopsStats(Count):
+    pass
+
 
 class ShopId(BaseModel):
     shop_id: UUID7 = Field(

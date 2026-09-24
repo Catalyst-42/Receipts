@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import Count, ErrorResponse
-from src.measures.schemes import MeasureId, Measure, MeasureList
+from src.core.schemes import ErrorResponse
+from src.measures.schemes import MeasureId, Measure, MeasureList, MeasuresStats
 from src.measures.service import MeasuresService
 
 router = APIRouter(prefix="/measures", tags=["Measures"])
@@ -16,6 +16,17 @@ def get_measures_service(db: AsyncSession = Depends(get_db)):
     return MeasuresService(db)
 
 
+@router.get(
+    "/stats",
+    response_model=MeasuresStats,
+)
+async def get_measures_stats(
+    measures_service: MeasuresService = Depends(get_measures_service),
+) -> MeasuresStats:
+    """Returns statistics for measure records."""
+    return await measures_service.get_stats()
+
+
 @router.get("/", response_model=MeasureList)
 async def get_measure_types(
     measures_service: MeasuresService = Depends(get_measures_service),
@@ -23,17 +34,6 @@ async def get_measure_types(
     """Returns all directory of item measures"""
     result = await measures_service.get_all()
     return result
-
-
-@router.get(
-    "/stats/count",
-    response_model=Count,
-)
-async def get_receipts_count(
-    measures_service: MeasuresService = Depends(get_measures_service),
-) -> Count:
-    """Returns total count of measure types in database"""
-    return await measures_service.get_count()
 
 
 @router.get(

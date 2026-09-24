@@ -6,23 +6,23 @@ from fastapi.routing import APIRouter
 
 from src.users.dependencies import get_user
 from src.users.schemes import User
-from src.core.schemes import Count, ErrorResponse
+from src.core.schemes import ErrorResponse
 from src.crpt.dependencies import get_crpt_service
-from src.crpt.schemes import Crpt, CrptId
+from src.crpt.schemes import Crpt, CrptId, CrptStats
 from src.crpt.service import CrptService
 
 router = APIRouter(prefix="/crpt", tags=["CRPT"])
 
 
 @router.get(
-    "/stats/count",
-    response_model=Count,
+    "/stats",
+    response_model=CrptStats,
 )
-async def get_crpt_count(
-    receipt_service: CrptService = Depends(get_crpt_service),
-) -> Count:
-    """Returns total count of crpt records in database"""
-    return await receipt_service.get_count()
+async def get_crpt_stats(
+    crpt_service: CrptService = Depends(get_crpt_service),
+) -> CrptStats:
+    """Returns statistics for CRPT records."""
+    return await crpt_service.get_stats()
 
 
 @router.get(
