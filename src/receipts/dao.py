@@ -1,17 +1,13 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Sequence
-from zoneinfo import ZoneInfo
 
-from fastapi_pagination import Page
-from src.receipts.schemes import Receipt, ReceiptsStats
-from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
-from sqlalchemy import Select, exists, func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.receipts.filters import ReceiptsFilter
 from src.receipts.model import ReceiptsOrm
+from src.receipts.schemes import ReceiptsStats
 
 
 class ReceiptsDao:

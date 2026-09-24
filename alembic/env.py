@@ -12,7 +12,7 @@ from src.core.db import Base
 import src.users.model  # noqa: F401
 
 # CRPT
-import src.crpt.models  # noqa: F401
+import src.crpt.model  # noqa: F401
 
 # Receipts
 import src.receipts.model  # noqa: F401
@@ -24,7 +24,7 @@ import src.shops.model  # noqa: F401
 import src.employees.model  # noqa: F401
 
 # Directories
-import src.measures.models  # noqa: F401
+import src.measures.model  # noqa: F401
 import src.nds.model  # noqa: F401
 import src.payments.model  # noqa: F401
 import src.products.model  # noqa: F401

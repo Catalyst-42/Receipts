@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Sequence
 
 from pydantic import UUID7
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
@@ -13,6 +13,9 @@ from src.receipts.model import ReceiptsOrm
 class ItemsDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    def build_query(self) -> Select:
+        return Select(ItemsOrm)
 
     async def get_all(self) -> Sequence[ItemsOrm]:
         stmt = select(ItemsOrm)

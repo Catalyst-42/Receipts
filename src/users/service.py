@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.jwt import create_access_token
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
-from src.receipts.filters import ReceiptsFilter
+from src.receipts.filters import ReceiptsFilters
 from src.receipts.schemes import Receipt
 from src.receipts.service import ReceiptsService
 from src.users.dao import UsersDao
@@ -103,7 +103,7 @@ class UsersService:
         self,
         user: User,
         username: str,
-        filters: ReceiptsFilter,
+        filters: ReceiptsFilters,
     ) -> Page[Receipt]:
         owner = await self.users_dao.get_by_username(username)
         if not owner:

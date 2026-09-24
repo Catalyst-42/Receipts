@@ -2,12 +2,14 @@ from decimal import Decimal
 from typing import Any
 
 from fastapi import HTTPException, status
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.schemes import Count
 from src.core.transactional import transactional
 from src.items.dao import ItemsDao
+from src.items.filters import ItemsFilters
 from src.items.schemes import Item, ItemList, ItemsStats
 
 
@@ -15,6 +17,13 @@ class ItemsService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.items_dao = ItemsDao(db)
+
+    async def get(self, filters: ItemsFilters) -> Page[Item]:
+        stmt = self.items_dao.build_query()
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+
+        return await apaginate(self.db, stmt)
 
     async def get_all(self) -> ItemList:
         result = await self.items_dao.get_all()

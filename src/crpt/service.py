@@ -2,6 +2,8 @@ from typing import Any
 
 from fastapi import HTTPException, status
 from fastapi.responses import StreamingResponse
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from httpx import AsyncClient, ConnectError, TimeoutException
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,13 +11,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
+from src.crpt.filters import CrptFilters
 from src.crpt.schemes import Crpt, CrptList, CrptStats
 from src.receipts.schemes import FiscalFields
+
 
 class CrptService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.crpt_dao = CrptDao(db)
+
+    async def get(self, filters: CrptFilters) -> Page[Crpt]:
+        stmt = self.crpt_dao.build_query()
+        stmt = filters.filter(stmt)
+        stmt = filters.sort(stmt)
+
+        return await apaginate(self.db, stmt)
 
     async def get_all(self) -> CrptList:
         result = await self.crpt_dao.get_all()
@@ -117,5 +128,7 @@ class CrptService:
         return StreamingResponse(
             generate(),
             media_type="application/json",
-            headers={"Content-Disposition": "attachment; filename=qr_codes_export.json"},
+            headers={
+                "Content-Disposition": "attachment; filename=qr_codes_export.json"
+            },
         )

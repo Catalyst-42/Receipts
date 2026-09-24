@@ -18,7 +18,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.db import Base
 
 if TYPE_CHECKING:
-    from src.crpt.models import CrptOrm
+    from src.crpt.model import CrptOrm
     from src.employees.model import EmployeesOrm
     from src.items.model import ItemsOrm
     from src.retailers.model import RetailersOrm

@@ -3,7 +3,7 @@ from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 
 from src.core.schemes import ErrorResponse
-from src.receipts.filters import ReceiptsFilter
+from src.receipts.filters import ReceiptsFilters
 from src.receipts.schemes import Receipt
 from src.users.dependencies import get_user, get_users_service
 from src.users.schemes import User
@@ -38,7 +38,7 @@ async def get_current_user(
 async def get_user_receipts(
     username: str,
     user: User = Depends(get_user),
-    filters: ReceiptsFilter = FilterDepends(ReceiptsFilter),
+    filters: ReceiptsFilters = FilterDepends(ReceiptsFilters),
     service: UsersService = Depends(get_users_service),
 ) -> Page[Receipt]:
     """Returns list of user receipts"""

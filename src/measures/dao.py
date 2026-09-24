@@ -3,7 +3,7 @@ from typing import Sequence
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.measures.models import MeasuresOrm
+from src.measures.model import MeasuresOrm
 from src.measures.schemes import MeasuresStats
 
 

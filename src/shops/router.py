@@ -2,19 +2,14 @@ from typing import Annotated
 
 from fastapi import Depends, Path
 from fastapi.routing import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.db import get_db
 from src.core.schemes import ErrorResponse
 from src.items.schemes import ItemList
+from src.shops.dependencies import get_shops_service
 from src.shops.schemes import Shop, ShopId, ShopsStats
 from src.shops.service import ShopsService
 
 router = APIRouter(prefix="/shops", tags=["Shops"])
-
-
-def get_shops_service(db: AsyncSession = Depends(get_db)):
-    return ShopsService(db)
 
 
 @router.get(

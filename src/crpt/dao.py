@@ -1,16 +1,19 @@
 from typing import Any, Sequence
 
 from pydantic import UUID7
-from sqlalchemy import func, select, exists
+from sqlalchemy import Select, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crpt.models import CrptOrm
+from src.crpt.model import CrptOrm
 from src.crpt.schemes import CrptStats
 
 
 class CrptDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    def build_query(self) -> Select:
+        return select(CrptOrm)
 
     async def get_all(self) -> Sequence[CrptOrm]:
         stmt = select(CrptOrm)
@@ -57,8 +60,4 @@ class CrptDao:
         return crpt
 
     async def exists_by_user(self, user_id: UUID7, crpt_id: UUID7) -> bool:
-        stmt = select(
-            exists().where(
-                CrptOrm.id
-            )
-        )
+        stmt = select(exists().where(CrptOrm.id))

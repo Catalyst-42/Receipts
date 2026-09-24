@@ -3,10 +3,10 @@ from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from src.receipts.dao import ReceiptsDao
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptId, ReceiptsStats
+from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
 from src.core.transactional import transactional
 from src.items.schemes import ItemList, Item
-from src.receipts.filters import ReceiptsFilter
+from src.receipts.filters import ReceiptsFilters
 from fastapi_pagination import Page
 
 class ReceiptsService:
@@ -14,7 +14,7 @@ class ReceiptsService:
         self.db = db
         self.receipts_dao = ReceiptsDao(db)
 
-    async def get(self, filters: ReceiptsFilter) -> Page[Receipt]:
+    async def get(self, filters: ReceiptsFilters) -> Page[Receipt]:
         stmt = self.receipts_dao.build_query()
         stmt = filters.filter(stmt)
         stmt = filters.sort(stmt)
@@ -22,7 +22,7 @@ class ReceiptsService:
         return await apaginate(self.db, stmt)
 
     async def get_by_owner(
-        self, owner_id: UUID7, filters: ReceiptsFilter
+        self, owner_id: UUID7, filters: ReceiptsFilters
     ) -> Page[Receipt]:
         stmt = self.receipts_dao.build_query_by_owner(owner_id=owner_id)
         stmt = filters.filter(stmt)

@@ -1,5 +1,5 @@
 from pydantic import UUID7
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.retailers.model import RetailersOrm
@@ -9,6 +9,9 @@ from src.retailers.schemes import RetailersStats
 class RetailersDao:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    def build_query(self) -> Select:
+        return Select(RetailersOrm)
 
     async def get_by_id(self, retailer_id: UUID7) -> RetailersOrm | None:
         stmt = select(RetailersOrm).where(RetailersOrm.id == retailer_id)

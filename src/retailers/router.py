@@ -2,19 +2,14 @@ from typing import Annotated
 
 from fastapi import Depends, Path
 from fastapi.routing import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.db import get_db
 from src.core.schemes import ErrorResponse
+from src.items.schemes import ItemList
+from src.retailers.dependencies import get_retailers_service
 from src.retailers.schemes import Retailer, RetailerId, RetailersStats
 from src.retailers.service import RetailersService
-from src.items.schemes import ItemList
 
 router = APIRouter(prefix="/retailers", tags=["Retailers"])
-
-
-def get_retailers_service(db: AsyncSession = Depends(get_db)):
-    return RetailersService(db)
 
 
 @router.get(
