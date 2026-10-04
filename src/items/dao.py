@@ -17,6 +17,20 @@ class ItemsDao:
     def build_query(self) -> Select:
         return Select(ItemsOrm)
 
+    def build_query_by_retailer_id(self, retailer_id: UUID7) -> Select:
+        return (
+            select(ItemsOrm)
+            .join(ItemsOrm.receipt)
+            .where(ReceiptsOrm.retailer_id == retailer_id)
+        )
+
+    def build_query_by_shop_id(self, shop_id: UUID7) -> Select:
+        return (
+            select(ItemsOrm)
+            .join(ItemsOrm.receipt)
+            .where(ReceiptsOrm.shop_id == shop_id)
+        )
+
     async def get_all(self) -> Sequence[ItemsOrm]:
         stmt = select(ItemsOrm)
 

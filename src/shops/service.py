@@ -5,7 +5,8 @@ from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
-from src.items.schemes import ItemList
+from src.items.filters import ItemsFilters
+from src.items.schemes import Item
 from src.items.service import ItemsService
 from src.shops.dao import ShopsDao
 from src.shops.filters import ShopsFilters
@@ -43,9 +44,10 @@ class ShopsService:
     async def get_stats(self) -> ShopsStats:
         return await self.shops_dao.get_stats()
 
-    async def get_items(self, shop_id: UUID7) -> ItemList:
-        result = await self.items_service.get_all_by_shop_id(shop_id)
-        return result
+    async def get_items(
+        self, shop_id: UUID7, filters: ItemsFilters = None
+    ) -> Page[Item]:
+        return await self.items_service.get_by_shop_id(shop_id, filters)
 
     @transactional
     async def create(self, retailer_id: UUID7, address: str | None) -> Shop:

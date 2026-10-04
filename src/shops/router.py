@@ -2,9 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends, Path
 from fastapi.routing import APIRouter
+from fastapi_filter import FilterDepends
+from fastapi_pagination import Page
 
 from src.core.schemes import ErrorResponse
-from src.items.schemes import ItemList
+from src.items.filters import ItemsFilters
+from src.items.schemes import Item
 from src.shops.dependencies import get_shops_service
 from src.shops.schemes import Shop, ShopId, ShopsStats
 from src.shops.service import ShopsService
@@ -25,18 +28,18 @@ async def get_shops_stats(
 
 @router.get(
     "/{shop_id}/items",
-    response_model=ItemList,
+    response_model=Page[Item],
     responses={
         404: {"model": ErrorResponse, "description": "Shop not found"},
     },
 )
 async def get_shop_items(
     request: Annotated[ShopId, Path()],
+    filters: ItemsFilters = FilterDepends(ItemsFilters),
     shop_service: ShopsService = Depends(get_shops_service),
-) -> ItemList:
-    """Returns all items sold in this shop"""
-    result = await shop_service.get_items(request.shop_id)
-    return result
+) -> Page[Item]:
+    """Returns items sold in this shop"""
+    return await shop_service.get_items(request.shop_id, filters)
 
 
 @router.get(

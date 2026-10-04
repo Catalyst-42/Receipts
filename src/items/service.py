@@ -29,13 +29,23 @@ class ItemsService:
         result = await self.items_dao.get_all()
         return ItemList(items=[Item.model_validate(item) for item in result])
 
-    async def get_all_by_retailer_id(self, retailer_id: UUID7) -> ItemList:
-        result = await self.items_dao.get_all_by_retailer_id(retailer_id)
-        return ItemList(items=[Item.model_validate(item) for item in result])
+    async def get_by_retailer_id(
+        self, retailer_id: UUID7, filters: ItemsFilters = None
+    ) -> Page[Item]:
+        stmt = self.items_dao.build_query_by_retailer_id(retailer_id)
+        if filters:
+            stmt = filters.filter(stmt)
+            stmt = filters.sort(stmt)
+        return await apaginate(self.db, stmt)
 
-    async def get_all_by_shop_id(self, shop_id: UUID7) -> ItemList:
-        result = await self.items_dao.get_all_by_shop_id(shop_id)
-        return ItemList(items=[Item.model_validate(item) for item in result])
+    async def get_by_shop_id(
+        self, shop_id: UUID7, filters: ItemsFilters = None
+    ) -> Page[Item]:
+        stmt = self.items_dao.build_query_by_shop_id(shop_id)
+        if filters:
+            stmt = filters.filter(stmt)
+            stmt = filters.sort(stmt)
+        return await apaginate(self.db, stmt)
 
     async def get_by_receipt_id(self, receipt_id: UUID7) -> ItemList:
         result = await self.items_dao.get_by_receipt_id(receipt_id)

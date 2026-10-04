@@ -1,11 +1,13 @@
 from fastapi import HTTPException, status
+from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
-from src.items.schemes import ItemList
+from src.items.filters import ItemsFilters
+from src.items.schemes import Item
 from src.items.service import ItemsService
 from src.retailers.dao import RetailersDao
 from src.retailers.filters import RetailersFilters
@@ -43,9 +45,10 @@ class RetailersService:
     async def get_stats(self) -> RetailersStats:
         return await self.retailers_dao.get_stats()
 
-    async def get_items(self, retailer_id: UUID7) -> ItemList:
-        result = await self.items_service.get_all_by_retailer_id(retailer_id)
-        return result
+    async def get_items(
+        self, retailer_id: UUID7, filters: ItemsFilters = None
+    ) -> Page[Item]:
+        return await self.items_service.get_by_retailer_id(retailer_id, filters)
 
     @transactional
     async def create(self, inn: str, name: str) -> Retailer:

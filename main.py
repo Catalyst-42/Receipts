@@ -10,12 +10,12 @@ from src.core.middleware import ProcessTimeMiddleware
 from src.core.router import router as core_router
 from src.crpt.admin_router import router as crpt_admin_router
 from src.crpt.router import router as crpt_router
-from src.operators.admin_router import router as operators_admin_router
-from src.operators.router import router as operators_router
 from src.items.admin_router import router as items_admin_router
 from src.items.router import router as items_router
 from src.measures.router import router as measures_router
 from src.nds.router import router as nds_router
+from src.operators.admin_router import router as operators_admin_router
+from src.operators.router import router as operators_router
 from src.payments.router import router as payments_router
 from src.products.router import router as products_router
 from src.receipts.admin_router import router as receipts_admin_router

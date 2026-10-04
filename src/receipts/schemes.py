@@ -5,12 +5,13 @@ from typing import Any
 from pydantic import (
     UUID7,
     BaseModel,
+    ConfigDict,
     Field,
     computed_field,
     field_validator,
-    ConfigDict,
 )
-from src.core.schemes import Count, Total, Average
+
+from src.core.schemes import Average, Count, Total
 
 
 class ReceiptsStats(Count, Total, Average):
@@ -19,14 +20,15 @@ class ReceiptsStats(Count, Total, Average):
 
 class ReceiptId(BaseModel):
     receipt_id: UUID7 = Field(
-        example="01a04f1b-cb73-7110-bd8b-b2eba9b49d11",
+        example="01a09461-b7bd-772c-89b6-1f32a30698d4",
         description="Unique id of scanned receipt",
     )
+
 
 class QRCode(BaseModel):
     url: str = Field(
         example="t=20230915T1549&s=8292.00&fn=72814405009495538i=41528fp=2070528798&n=1",
-        description="QR code of scanned receipt"
+        description="QR code of scanned receipt",
     )
 
 
@@ -105,7 +107,7 @@ class Receipt(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID7 = Field(
-        example="01a04f1b-cb73-7110-bd8b-b2eba9b49d11",
+        example="01a09461-b7bd-772c-89b6-1f32a30698d4",
         description="Unique id of scanned receipt",
     )
     crpt_id: UUID7 = Field(
