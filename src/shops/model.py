@@ -41,16 +41,6 @@ class ShopsOrm(Base):
         nullable=False,
         comment="Physical address of a shop",
     )
-    latitude: Mapped[float] = mapped_column(
-        Float(),
-        nullable=False,
-        comment="Geolocation latitude of a shop",
-    )
-    longitude: Mapped[float] = mapped_column(
-        Float(),
-        nullable=False,
-        comment="Geolocation longitude of a shop",
-    )
 
     # Relations
     receipts: Mapped[list["ReceiptsOrm"]] = relationship(

@@ -43,14 +43,10 @@ class ShopsDao:
         self,
         retailer_id: UUID7,
         address: str,
-        latitude: float,
-        longitude: float,
     ) -> ShopsOrm:
         result = ShopsOrm(
             retailer_id=retailer_id,
             address=address,
-            latitude=latitude,
-            longitude=longitude,
         )
 
         self.db.add(result)

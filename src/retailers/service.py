@@ -1,11 +1,11 @@
-from re import IGNORECASE, sub
-
 from fastapi import HTTPException, status
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
+from httpx import AsyncClient, ConnectError, HTTPError
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config import settings
 from src.core.transactional import transactional
 from src.items.filters import ItemsFilters
 from src.items.schemes import Item
@@ -21,54 +21,46 @@ class RetailersService:
         self.retailers_dao = RetailersDao(db)
         self.items_service = ItemsService(db)
 
-    def _name_compress(self, name: str | None, inn: str) -> str | None:
-        """Cleans and compresses abbrs of retailer name string"""
-        if name is None:
-            return None
+    async def get_name_by_inn(self, inn: str) -> str:
+        client_kwargs = {
+            "timeout": 10,
+            "headers": {
+                "content-type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Token {settings.dadata_token}",
+                "X-Secret": settings.dadata_secret,
+            },
+        }
 
-        name = self._str_clean(name)
-        name = sub(
-            "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
-            "ООО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
-            "ФГБУК",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "АКЦИОНЕРНОЕ ОБЩЕСТВО",
-            "АО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ПУБЛИЧНОЕ АО",
-            "ПАО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
-            "ГБУК",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ",
-            "ГУП",
-            name,
-            flags=IGNORECASE,
-        )
+        try:
+            async with AsyncClient(**client_kwargs) as dadata_client:
+                response = await dadata_client.post(
+                    "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party",
+                    json={"query": inn},
+                )
+                response.raise_for_status()
+                data = response.json()
 
-        if len(inn.strip()) == 12 and len(name) > 1 and name[:2].upper() != "ИП":
-            name = f"ИП {name}"
+        except TimeoutError:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="Cannot reach the DaData API by timeout",
+            )
 
-        return name
+        except ConnectError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No internet connection",
+            )
 
+        suggestions = data.get("suggestions", [])
+        if not suggestions:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Company with INN {inn} not found",
+            )
+
+        return suggestions[0]["value"]
 
     async def get(self, filters: RetailersFilters) -> Page[Retailer]:
         stmt = self.retailers_dao.build_query()
@@ -104,7 +96,7 @@ class RetailersService:
     async def create(self, inn: str, name: str) -> Retailer:
         result = await self.retailers_dao.get_by_inn(inn)
         if not result:
-            name = self._name_compress(name, inn)
+            name = await self.get_name_by_inn(inn)
             result = await self.retailers_dao.create(inn, name)
 
         return Retailer.model_validate(result)
