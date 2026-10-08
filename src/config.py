@@ -11,9 +11,6 @@ class Settings(BaseSettings):
     # Database
     database_url: str
 
-    # CRPT Proxy
-    timeout_seconds: int
-
     # Server
     host: str
     port: int
@@ -26,6 +23,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str
     jwt_secret_key: str
     jwt_access_token_expire_days: int
+
+    # Dadata
+    dadata_token: str
+    dadata_secret: str
 
     class Config:
         env_file = ".env"

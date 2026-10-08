@@ -3,6 +3,28 @@ from pydantic import UUID7, BaseModel, ConfigDict, Field
 from src.core.schemes import Count
 
 
+class Address(BaseModel):
+    address: str = Field(
+        example="117525, г. Москва, ул. Днепропетровская, д. 4а, стр. 1",
+        description="Physical address of a shop",
+    )
+
+
+class Geolocation(Address):
+    latitude: float = Field(
+        example=55.6231378,
+        description="Geolocation latitude",
+        ge=-90,
+        le=90,
+    )
+    longitude: float = Field(
+        example=37.6014656,
+        description="Geolocation longitude",
+        ge=-180,
+        le=180,
+    )
+
+
 class ShopsStats(Count):
     pass
 
@@ -26,7 +48,7 @@ class Shop(BaseModel):
         description="Link on retailer - owner of this shop",
     )
     address: str | None = Field(
-        example="117525, г. Москва, ул. Днепропетровская, д. 4а, стр. 1",
+        example="г Москва, ул Днепропетровская, д 4А стр 1",
         description="Physical address of a shop. Null if shop is online one",
     )
 

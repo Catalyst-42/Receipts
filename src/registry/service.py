@@ -44,54 +44,6 @@ class RegistryService:
 
         return string
 
-    def _name_compress(self, name: str | None, inn: str) -> str | None:
-        """Cleans and compresses abbrs of retailer name string"""
-        if name is None:
-            return None
-
-        name = self._str_clean(name)
-        name = sub(
-            "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
-            "ООО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
-            "ФГБУК",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "АКЦИОНЕРНОЕ ОБЩЕСТВО",
-            "АО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ПУБЛИЧНОЕ АО",
-            "ПАО",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
-            "ГБУК",
-            name,
-            flags=IGNORECASE,
-        )
-        name = sub(
-            "ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ",
-            "ГУП",
-            name,
-            flags=IGNORECASE,
-        )
-
-        if len(inn.strip()) == 12 and len(name) > 1 and name[:2].upper() != "ИП":
-            name = f"ИП {name}"
-
-        return name
-
     async def get(self, fiscal_fields: FiscalFields) -> Registry:
         receipt = await self.receipts_service.receipts_dao.get_by_fiscal_fields(
             fiscal_fields.t_datetime,
@@ -184,7 +136,7 @@ class RegistryService:
         name = dump["fiscalData"]["receipt"].get("user", "")
         retailer = await self.retailers_service.create(
             inn=self._str_clean(inn),
-            name=self._name_compress(name, inn),
+            name=name,
         )
 
         address = dump["fiscalData"]["receipt"].get("retailPlaceAddress", None)

@@ -8,7 +8,6 @@ from httpx import AsyncClient, ConnectError, TimeoutException
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import settings
 from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
 from src.crpt.filters import CrptFilters
@@ -47,7 +46,7 @@ class CrptService:
 
     async def get_from_crpt_api(self, fiscal_fields: FiscalFields) -> dict[str, Any]:
         client_kwargs = {
-            "timeout": settings.timeout_seconds,
+            "timeout": 10,
             "headers": {
                 "content-type": "application/json",
                 "accept": "application/json",

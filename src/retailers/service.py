@@ -1,5 +1,6 @@
+from re import IGNORECASE, sub
+
 from fastapi import HTTPException, status
-from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from pydantic import UUID7
@@ -19,6 +20,55 @@ class RetailersService:
         self.db = db
         self.retailers_dao = RetailersDao(db)
         self.items_service = ItemsService(db)
+
+    def _name_compress(self, name: str | None, inn: str) -> str | None:
+        """Cleans and compresses abbrs of retailer name string"""
+        if name is None:
+            return None
+
+        name = self._str_clean(name)
+        name = sub(
+            "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
+            "ООО",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
+            "ФГБУК",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "АКЦИОНЕРНОЕ ОБЩЕСТВО",
+            "АО",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ПУБЛИЧНОЕ АО",
+            "ПАО",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ КУЛЬТУРЫ",
+            "ГБУК",
+            name,
+            flags=IGNORECASE,
+        )
+        name = sub(
+            "ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ",
+            "ГУП",
+            name,
+            flags=IGNORECASE,
+        )
+
+        if len(inn.strip()) == 12 and len(name) > 1 and name[:2].upper() != "ИП":
+            name = f"ИП {name}"
+
+        return name
+
 
     async def get(self, filters: RetailersFilters) -> Page[Retailer]:
         stmt = self.retailers_dao.build_query()
@@ -54,6 +104,7 @@ class RetailersService:
     async def create(self, inn: str, name: str) -> Retailer:
         result = await self.retailers_dao.get_by_inn(inn)
         if not result:
+            name = self._name_compress(name, inn)
             result = await self.retailers_dao.create(inn, name)
 
         return Retailer.model_validate(result)

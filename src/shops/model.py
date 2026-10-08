@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid7
 
 from pydantic import UUID7
-from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, text
+from sqlalchemy import CheckConstraint, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,7 +17,11 @@ if TYPE_CHECKING:
 class ShopsOrm(Base):
     """Table of all shops by retailers"""
 
-    __table_args__ = (UniqueConstraint("retailer_id", "address"),)
+    __table_args__ = (
+        UniqueConstraint("retailer_id", "address"),
+        CheckConstraint("latitude BETWEEN -90 AND 90", name="latitude_range"),
+        CheckConstraint("longitude BETWEEN -180 AND 180", name="longitude_range"),
+    )
 
     id: Mapped[UUID7] = mapped_column(
         UUID(as_uuid=True),
@@ -36,6 +40,16 @@ class ShopsOrm(Base):
         String(),
         nullable=False,
         comment="Physical address of a shop",
+    )
+    latitude: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False,
+        comment="Geolocation latitude of a shop",
+    )
+    longitude: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False,
+        comment="Geolocation longitude of a shop",
     )
 
     # Relations
