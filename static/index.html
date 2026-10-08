@@ -42,11 +42,11 @@
             </button>
           </div>
 
-          <!-- Camera view: visible by default, camera itself starts off -->
+          <!-- Camera -->
           <div id="reader" class="ratio ratio-1x1 border rounded mb-3"
             style="overflow: hidden; position: relative; max-width: 100%; object-fit: cover;"></div>
 
-          <!-- Manual fields view: hidden by default -->
+          <!-- Manual fields -->
           <div id="manualPanel" class="d-none mb-3">
             <input type="text" class="form-control mb-3" id="fieldT" placeholder="Дата и время" inputmode="text">
             <input type="text" class="form-control mb-3" id="fieldS" placeholder="Сумма" inputmode="decimal">
@@ -56,9 +56,13 @@
             <input type="text" class="form-control" id="fieldFp" placeholder="ФП" inputmode="numeric">
           </div>
 
-          <!-- Single row: input, pencil, camera, submit -->
+          <!-- Action buttons -->
           <div class="input-group mb-3">
             <input type="text" class="form-control" id="manualInput" placeholder="QR код чека">
+            <input type="file" id="fileInput" accept="image/*" class="form-control" style="display: none;">
+            <button class="btn btn-primary" type="button" id="fileUploadBtn" title="Загрузить файл QR-кода">
+              <i class="bi bi-file-earmark-image"></i>
+            </button>
             <button class="btn btn-primary" type="button" id="manualToggleBtn" title="Ручной ввод">
               <i class="bi bi-pencil"></i>
             </button>

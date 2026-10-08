@@ -3,10 +3,12 @@ import QrScanner from 'qr-scanner';
 // DOM references
 const reader = document.getElementById('reader');
 const manualPanel = document.getElementById('manualPanel');
+const fileUploadBtn = document.getElementById('fileUploadBtn');
 const manualToggleBtn = document.getElementById('manualToggleBtn');
 const cameraToggleBtn = document.getElementById('cameraToggleBtn');
 const submitBtn = document.getElementById('submitBtn');
 const manualInput = document.getElementById('manualInput');
+const fileInput = document.getElementById('fileInput');
 const resultDiv = document.getElementById('result');
 const receiptCountDiv = document.getElementById('receiptCount');
 
@@ -94,6 +96,92 @@ function setViewMode(mode) {
   manualPanel.classList.toggle('d-none', mode !== 'manual');
   manualToggleBtn.classList.toggle('btn-secondary', mode === 'manual');
   manualToggleBtn.classList.toggle('btn-primary', mode !== 'manual');
+}
+
+// File upload handling
+function onFileUploadClick() {
+  if (isBusy) return;
+  fileInput.click();
+}
+
+fileUploadBtn.addEventListener('click', onFileUploadClick);
+
+// File input change handler
+fileInput.addEventListener('change', async (event) => {
+  if (isBusy) return;
+  
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Check if file is an image
+  if (!file.type.startsWith('image/')) {
+    resultDiv.innerHTML = createError('Пожалуйста, выберите изображение');
+    return;
+  }
+  
+  try {
+    setBusy(true);
+    resultDiv.innerHTML = LOADING_TEMPLATE;
+    
+    // Create image element to display preview
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '300px';
+    
+    // Try to scan QR code
+    try {
+      if (typeof QrScanner !== 'undefined') {
+        const result = await QrScanner.scanImage(file);
+        onFileScanSuccess(result.data || result, result);
+      } else {
+        throw new Error('QR Scanner not loaded');
+      }
+    } catch (scanError) {
+      setBusy(false);
+      // Show image preview if QR scan failed
+      resultDiv.innerHTML = `
+        <div class="card bg-dark text-white mt-3">
+          <div class="card-body p-3">
+            <h6 class="card-title mb-2">Загруженное изображение</h6>
+            <div>${img.outerHTML}</div>
+            <div class="text-warning mt-2">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+                QR-код не найден. Попробуйте другое изображение.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    setBusy(false);
+    resultDiv.innerHTML = createError(`Ошибка обработки файла: ${error.message || error.toString()}`);
+  } finally {
+    // Clear the file input to allow re-uploading the same file
+    fileInput.value = '';
+  }
+});
+
+function onFileScanSuccess(decodedText, result) {
+  // Don't check isBusy here - we want to allow execution even if busy
+  // because this is the result of our scan operation
+  
+  try {
+    // Set the decoded text to manual input and parse fields
+    manualInput.value = decodedText;
+    
+    parseFieldsFromManualInput();
+    
+    // Reset busy state first
+    setBusy(false);
+    
+    // Immediately send to server - no success message
+    fetchReceiptData(decodedText);
+    
+  } catch (error) {
+    setBusy(false);
+    resultDiv.innerHTML = createError(`Ошибка при заполнении полей: ${error.message || error.toString()}`);
+  }
 }
 
 // Pencil: switch to manual view, stop camera if running
@@ -301,6 +389,12 @@ function createError(message) { return ERROR_TEMPLATE.replace('{message}', messa
 
 function createBeautifulCards(data) {
   let html = '';
+  
+  // Handle simple message
+  if (data.message) {
+    return `<div class="card bg-success text-white mt-3"><div class="card-body p-3"><h6 class="card-title mb-2">Успешно</h6><div>${data.message}</div></div></div>`;
+  }
+  
   if (data.owner) html += createOwnerCard(formatOwnerData(data.owner));
   if (data.receipt) html += createReceiptCard(formatReceiptData(data.receipt));
   if (data.items && data.items.length > 0) html += createItemsCard(formatItemsData(data.items));
@@ -379,6 +473,13 @@ function rebuildManualInputFromFields() {
 
 function parseFieldsFromManualInput() {
   const raw = manualInput.value.trim();
+  
+  // Check if fields exist
+  if (!fieldT || !fieldS || !fieldN || !fieldFn || !fieldI || !fieldFp) {
+    console.error('One or more field elements are missing');
+    return;
+  }
+  
   const params = new URLSearchParams(raw);
 
   fieldT.value = params.get('t') || '';
@@ -481,12 +582,11 @@ function stopScannerInternal() {
 
 async function updateReceiptCount() {
   try {
-    const response = await fetch('/receipts/stats/count', { headers: getAuthHeaders() });
+    const response = await fetch('/receipts/stats', { headers: getAuthHeaders() });
     const data = await response.json();
-    receiptCountDiv.textContent = data.total;
+    receiptCountDiv.textContent = data.count || '';
   } catch (error) {
     receiptCountDiv.textContent = '';
-    console.error('Error fetching receipt count:', error);
   }
 }
 
