@@ -14,6 +14,9 @@ import src.users.model  # noqa: F401
 # CRPT
 import src.crpt.model  # noqa: F401
 
+# Transactions
+import src.transactions.model  # noqa: F401
+
 # Receipts
 import src.receipts.model  # noqa: F401
 import src.items.model  # noqa: F401
