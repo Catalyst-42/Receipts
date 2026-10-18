@@ -6,7 +6,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.items.model import ItemsOrm
-from src.items.schemes import ItemsStats
+from src.items.schemas import ItemsStats
 from src.receipts.model import ReceiptsOrm
 
 

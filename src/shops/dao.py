@@ -3,7 +3,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.shops.model import ShopsOrm
-from src.shops.schemes import ShopsStats
+from src.shops.schemas import ShopsStats
 
 
 class ShopsDao:

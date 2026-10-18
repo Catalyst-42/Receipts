@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.products.schemes import GetProductByIdRequest, Product, ProductList, ProductsStats
+from src.core.schemas import ErrorResponse
+from src.products.schemas import GetProductByIdRequest, Product, ProductList, ProductsStats
 from src.products.service import ProductsService
 
 router = APIRouter(prefix="/products", tags=["Products"])

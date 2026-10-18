@@ -7,10 +7,10 @@ from src.core.jwt import create_access_token
 from src.core.security import hash_password, verify_password
 from src.core.transactional import transactional
 from src.receipts.filters import ReceiptsStatsFilters
-from src.receipts.schemes import Receipt, ReceiptsStats
+from src.receipts.schemas import Receipt, ReceiptsStats
 from src.receipts.service import ReceiptsService
 from src.users.dao import UsersDao
-from src.users.schemes import AccessToken, Login, Passwords, Register, User
+from src.users.schemas import AccessToken, Login, Passwords, Register, User
 
 
 class UsersService:

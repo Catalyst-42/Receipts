@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends, Path
 from fastapi.routing import APIRouter
 
-from src.core.schemes import ErrorResponse
+from src.core.schemas import ErrorResponse
 from src.operators.dependencies import get_operators_service
-from src.operators.schemes import Operator, OperatorId, OperatorsStats
+from src.operators.schemas import Operator, OperatorId, OperatorsStats
 from src.operators.service import OperatorsService
 
 router = APIRouter(prefix="/operators", tags=["Operators"])

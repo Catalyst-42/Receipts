@@ -6,9 +6,9 @@ from fastapi.routing import APIRouter
 from src.receipts.dependencies import get_receipts_service
 from src.receipts.service import ReceiptsService
 from src.users.dependencies import get_admin
-from src.users.schemes import User
+from src.users.schemas import User
 from src.receipts.filters import ReceiptsFilters
-from src.receipts.schemes import Receipt
+from src.receipts.schemas import Receipt
 
 router = APIRouter(prefix="/admin/receipts", tags=["Admin"])
 

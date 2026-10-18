@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.transactional import transactional
 from src.crpt.dao import CrptDao
 from src.crpt.filters import CrptFilters
-from src.crpt.schemes import Crpt, CrptList, CrptStats
-from src.receipts.schemes import FiscalFields
+from src.crpt.schemas import Crpt, CrptList, CrptStats
+from src.receipts.schemas import FiscalFields
 
 
 class CrptService:

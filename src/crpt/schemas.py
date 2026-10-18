@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import UUID7, BaseModel, ConfigDict, Field
 
-from src.core.schemes import Count
+from src.core.schemas import Count
 
 
 class CrptStats(Count):

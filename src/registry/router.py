@@ -5,11 +5,11 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.receipts.schemes import FiscalFields, ReceiptId
-from src.registry.schemes import Registry
+from src.core.schemas import ErrorResponse
+from src.receipts.schemas import FiscalFields, ReceiptId
+from src.registry.schemas import Registry
 from src.registry.service import RegistryService
-from src.users.schemes import User
+from src.users.schemas import User
 from src.users.dependencies import get_user
 
 router = APIRouter(prefix="/registry", tags=["Registry"])

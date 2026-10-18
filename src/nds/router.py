@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.nds.schemes import NdsId, Nds, NdsList, NdsStats
+from src.core.schemas import ErrorResponse
+from src.nds.schemas import NdsId, Nds, NdsList, NdsStats
 from src.nds.service import NdsService
 
 router = APIRouter(prefix="/nds", tags=["Nds"])

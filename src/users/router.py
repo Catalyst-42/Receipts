@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 
-from src.core.schemes import ErrorResponse
+from src.core.schemas import ErrorResponse
 from src.receipts.filters import ReceiptsFilters, ReceiptsStatsFilters
-from src.receipts.schemes import Receipt, ReceiptsStats
+from src.receipts.schemas import Receipt, ReceiptsStats
 from src.users.dependencies import get_user, get_users_service
-from src.users.schemes import User
+from src.users.schemas import User
 from src.users.service import UsersService
 
 router = APIRouter(prefix="/users", tags=["Users"])

@@ -8,11 +8,11 @@ from fastapi_pagination import Page
 
 from src.crpt.dependencies import get_crpt_service
 from src.crpt.filters import CrptFilters
-from src.crpt.schemes import Crpt
+from src.crpt.schemas import Crpt
 from src.crpt.service import CrptService
-from src.receipts.schemes import FiscalFields
+from src.receipts.schemas import FiscalFields
 from src.users.dependencies import get_admin
-from src.users.schemes import User
+from src.users.schemas import User
 
 router = APIRouter(prefix="/admin/crpt", tags=["Admin"])
 

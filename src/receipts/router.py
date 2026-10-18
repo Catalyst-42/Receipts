@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import Depends, Path, Query
 from fastapi.routing import APIRouter
 
-from src.core.schemes import ErrorResponse
-from src.items.schemes import ItemList
+from src.core.schemas import ErrorResponse
+from src.items.schemas import ItemList
 from src.receipts.dependencies import get_receipts_service
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptId, ReceiptsStats
+from src.receipts.schemas import FiscalFields, Receipt, ReceiptId, ReceiptsStats
 from src.receipts.service import ReceiptsService
 
 router = APIRouter(prefix="/receipts", tags=["Receipts"])

@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.dao import ProductsDao
-from src.products.schemes import Product, ProductList, ProductsStats
+from src.products.schemas import Product, ProductList, ProductsStats
 
 
 class ProductsService:

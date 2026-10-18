@@ -5,10 +5,10 @@ from fastapi_pagination import Page
 
 from src.items.dependencies import get_items_service
 from src.items.filters import ItemsFilters
-from src.items.schemes import Item
+from src.items.schemas import Item
 from src.items.service import ItemsService
 from src.users.dependencies import get_admin
-from src.users.schemes import User
+from src.users.schemas import User
 
 router = APIRouter(prefix="/admin/items", tags=["Admin"])
 

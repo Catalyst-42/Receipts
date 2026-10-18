@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import Status
+from src.core.schemas import Status
 
 router = APIRouter(tags=["Core"])
 

@@ -8,11 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.core.transactional import transactional
 from src.items.filters import ItemsFilters
-from src.items.schemes import Item
+from src.items.schemas import Item
 from src.items.service import ItemsService
 from src.shops.dao import ShopsDao
 from src.shops.filters import ShopsFilters
-from src.shops.schemes import Shop, ShopList, ShopsStats
+from src.shops.schemas import Shop, ShopList, ShopsStats
 
 
 class ShopsService:

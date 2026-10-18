@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.core.schemes import Count
+from src.core.schemas import Count
 
 
 class PaymentsStats(Count):
@@ -12,6 +12,7 @@ class PaymentId(BaseModel):
         example=3,
         description="Unique identifier of the payment type",
     )
+
 
 class Payment(BaseModel):
     model_config = ConfigDict(from_attributes=True)

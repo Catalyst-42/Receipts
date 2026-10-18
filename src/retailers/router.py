@@ -5,11 +5,11 @@ from fastapi.routing import APIRouter
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 
-from src.core.schemes import ErrorResponse
+from src.core.schemas import ErrorResponse
 from src.items.filters import ItemsFilters
-from src.items.schemes import Item
+from src.items.schemas import Item
 from src.retailers.dependencies import get_retailers_service
-from src.retailers.schemes import Retailer, RetailerId, RetailersStats
+from src.retailers.schemas import Retailer, RetailerId, RetailersStats
 from src.retailers.service import RetailersService
 
 router = APIRouter(prefix="/retailers", tags=["Retailers"])

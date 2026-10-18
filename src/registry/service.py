@@ -3,24 +3,24 @@ from decimal import Decimal
 from re import IGNORECASE, sub
 
 from fastapi import HTTPException, status
-from src.users.schemes import User
+from src.users.schemas import User
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
-from src.users.schemes import Owner
-from src.crpt.schemes import Crpt
+from src.users.schemas import Owner
+from src.crpt.schemas import Crpt
 from src.crpt.service import CrptService
-from src.operators.schemes import Operator
+from src.operators.schemas import Operator
 from src.operators.service import OperatorsService
-from src.items.schemes import Item
+from src.items.schemas import Item
 from src.items.service import ItemsService
-from src.receipts.schemes import FiscalFields, Receipt
+from src.receipts.schemas import FiscalFields, Receipt
 from src.receipts.service import ReceiptsService
-from src.registry.schemes import Registry
-from src.retailers.schemes import Retailer
+from src.registry.schemas import Registry
+from src.retailers.schemas import Retailer
 from src.retailers.service import RetailersService
-from src.shops.schemes import Shop
+from src.shops.schemas import Shop
 from src.shops.service import ShopsService
 
 

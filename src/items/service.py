@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.transactional import transactional
 from src.items.dao import ItemsDao
 from src.items.filters import ItemsFilters
-from src.items.schemes import Item, ItemList, ItemsStats
+from src.items.schemas import Item, ItemList, ItemsStats
 
 
 class ItemsService:

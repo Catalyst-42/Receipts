@@ -5,10 +5,10 @@ from fastapi_pagination import Page
 
 from src.operators.dependencies import get_operators_service
 from src.operators.filters import OperatorsFilters
-from src.operators.schemes import Operator
+from src.operators.schemas import Operator
 from src.operators.service import OperatorsService
 from src.users.dependencies import get_admin
-from src.users.schemes import User
+from src.users.schemas import User
 
 router = APIRouter(prefix="/admin/operators", tags=["Admin"])
 

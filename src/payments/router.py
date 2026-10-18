@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.payments.schemes import PaymentId, Payment, PaymentList, PaymentsStats
+from src.core.schemas import ErrorResponse
+from src.payments.schemas import PaymentId, Payment, PaymentList, PaymentsStats
 
 from src.payments.service import PaymentsService
 

@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.nds.dao import NdsDao
 
-from src.nds.schemes import Nds, NdsList
+from src.nds.schemas import Nds, NdsList
 from fastapi import HTTPException, status
-from src.nds.schemes import NdsStats
+from src.nds.schemas import NdsStats
 
 
 class NdsService:

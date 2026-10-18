@@ -5,7 +5,7 @@ from sqlalchemy import Select, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crpt.model import CrptOrm
-from src.crpt.schemes import CrptStats
+from src.crpt.schemas import CrptStats
 
 
 class CrptDao:

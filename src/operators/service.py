@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.transactional import transactional
 from src.operators.dao import OperatorsDao
 from src.operators.filters import OperatorsFilters
-from src.operators.schemes import Operator, OperatorList, OperatorsStats
+from src.operators.schemas import Operator, OperatorList, OperatorsStats
 
 
 class OperatorsService:

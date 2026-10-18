@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.measures.dao import MeasuresDao
-from src.measures.schemes import Measure, MeasureList, MeasuresStats
+from src.measures.schemas import Measure, MeasureList, MeasuresStats
 
 
 class MeasuresService:

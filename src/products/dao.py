@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.products.model import ProductsOrm
-from src.products.schemes import ProductsStats
+from src.products.schemas import ProductsStats
 
 
 class ProductsDao:

@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import UUID7, BaseModel, ConfigDict, Field
 
-from src.core.schemes import Average, CountDistinct, Median
+from src.core.schemas import Average, CountDistinct, Median
 
 
 class ItemsStats(CountDistinct, Average, Median):

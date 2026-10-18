@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 from src.config import settings
-from src.core.schemes import Count
+from src.core.schemas import Count
 
 
 class Base(DeclarativeBase):

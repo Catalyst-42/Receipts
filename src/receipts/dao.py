@@ -7,7 +7,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.receipts.model import ReceiptsOrm
-from src.receipts.schemes import ReceiptsStats
+from src.receipts.schemas import ReceiptsStats
 
 
 class ReceiptsDao:

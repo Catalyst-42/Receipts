@@ -5,10 +5,10 @@ from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRouter
 
 from src.users.dependencies import get_user
-from src.users.schemes import User
-from src.core.schemes import ErrorResponse
+from src.users.schemas import User
+from src.core.schemas import ErrorResponse
 from src.crpt.dependencies import get_crpt_service
-from src.crpt.schemes import Crpt, CrptId, CrptStats
+from src.crpt.schemas import Crpt, CrptId, CrptStats
 from src.crpt.service import CrptService
 
 router = APIRouter(prefix="/crpt", tags=["CRPT"])

@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import get_db
-from src.core.schemes import ErrorResponse
-from src.measures.schemes import MeasureId, Measure, MeasureList, MeasuresStats
+from src.core.schemas import ErrorResponse
+from src.measures.schemas import MeasureId, Measure, MeasureList, MeasuresStats
 from src.measures.service import MeasuresService
 
 router = APIRouter(prefix="/measures", tags=["Measures"])

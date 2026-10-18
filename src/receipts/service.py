@@ -5,10 +5,10 @@ from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.transactional import transactional
-from src.items.schemes import Item, ItemList
+from src.items.schemas import Item, ItemList
 from src.receipts.dao import ReceiptsDao
 from src.receipts.filters import ReceiptsFilters, ReceiptsStatsFilters
-from src.receipts.schemes import FiscalFields, Receipt, ReceiptsStats
+from src.receipts.schemas import FiscalFields, Receipt, ReceiptsStats
 
 
 class ReceiptsService:

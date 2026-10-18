@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
-from src.core.schemes import ErrorResponse
+from src.core.schemas import ErrorResponse
 from src.users.dependencies import get_user, get_users_service
-from src.users.schemes import AccessToken, Login, Passwords, Register, User
+from src.users.schemas import AccessToken, Login, Passwords, Register, User
 from src.users.service import UsersService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

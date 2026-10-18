@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.measures.model import MeasuresOrm
-from src.measures.schemes import MeasuresStats
+from src.measures.schemas import MeasuresStats
 
 
 class MeasuresDao:

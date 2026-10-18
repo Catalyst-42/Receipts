@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.nds.model import NdsOrm
-from src.nds.schemes import NdsStats
+from src.nds.schemas import NdsStats
 
 
 class NdsDao:

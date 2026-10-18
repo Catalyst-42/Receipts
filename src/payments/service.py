@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.payments.dao import PaymentsDao
-from src.payments.schemes import Payment, PaymentList, PaymentsStats
+from src.payments.schemas import Payment, PaymentList, PaymentsStats
 
 
 class PaymentsService:

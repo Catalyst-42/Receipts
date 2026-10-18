@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.payments.model import PaymentsOrm
-from src.payments.schemes import PaymentsStats
+from src.payments.schemas import PaymentsStats
 
 
 class PaymentsDao:

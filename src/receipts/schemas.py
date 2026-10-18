@@ -11,7 +11,7 @@ from pydantic import (
     field_validator,
 )
 
-from src.core.schemes import Average, Count, Total
+from src.core.schemas import Average, Count, Total
 
 
 class ReceiptsStats(Count, Total, Average):
