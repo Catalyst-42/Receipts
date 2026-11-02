@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid7
 
 from pydantic import UUID7
-from sqlalchemy import Enum, ForeignKey, Numeric
+from sqlalchemy import Enum, ForeignKey, Numeric, String, null
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from src.users.model import UsersOrm
 
 
-class TransactoinsOrm(Base):
+class TransactionsOrm(Base):
     """All records of money flows"""
 
     id: Mapped[UUID7] = mapped_column(
@@ -56,6 +56,11 @@ class TransactoinsOrm(Base):
         nullable=False,
         index=True,
         comment="Transaction type by money flow",
+    )
+    note: Mapped[str] = mapped_column(
+        String,
+        nullable=True,
+        comment="A note for a transaction registry",
     )
 
     # Relations

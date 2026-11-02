@@ -23,7 +23,7 @@ class RetailersService:
 
     async def get_name_by_inn(self, inn: str) -> str:
         client_kwargs = {
-            "timeout": 10,
+            "timeout": 25,
             "headers": {
                 "content-type": "application/json",
                 "accept": "application/json",

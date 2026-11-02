@@ -46,7 +46,7 @@ class CrptService:
 
     async def get_from_crpt_api(self, fiscal_fields: FiscalFields) -> dict[str, Any]:
         client_kwargs = {
-            "timeout": 10,
+            "timeout": 25,
             "headers": {
                 "content-type": "application/json",
                 "accept": "application/json",
