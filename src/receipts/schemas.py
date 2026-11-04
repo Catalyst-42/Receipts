@@ -64,7 +64,7 @@ class FiscalFields(BaseModel):
     @classmethod
     def _parse_fiscal_time(cls, value: Any) -> datetime:
         """Tries to parse fiscal time by two formats"""
-        time_formats = ("%Y%m%dT%H%M", "%Y%m%dT%H%M%S")
+        time_formats = ("%Y%m%dT%H%M", "%Y%m%dT%H%M%S", "%d.%m.%y %H:%M")
 
         for time_format in time_formats:
             try:
