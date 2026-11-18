@@ -19,8 +19,6 @@ class ShopsOrm(Base):
 
     __table_args__ = (
         UniqueConstraint("retailer_id", "address"),
-        CheckConstraint("latitude BETWEEN -90 AND 90", name="latitude_range"),
-        CheckConstraint("longitude BETWEEN -180 AND 180", name="longitude_range"),
     )
 
     id: Mapped[UUID7] = mapped_column(

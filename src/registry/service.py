@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from re import IGNORECASE, sub
+from re import sub
 
 from fastapi import HTTPException, status
+from src.transactions.service import TransactionsService
 from src.users.schemas import User
 from pydantic import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +34,7 @@ class RegistryService:
         self.retailers_service = RetailersService(db)
         self.shops_service = ShopsService(db)
         self.operators_service = OperatorsService(db)
+        self.transactions_service = TransactionsService(db)
 
     def _str_clean(self, string: str | None) -> str | None:
         """Strips input and removes space duplication"""

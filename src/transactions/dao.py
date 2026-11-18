@@ -29,12 +29,14 @@ class TransactionsDao:
         receipt_id: UUID7,
         total: Decimal,
         type: TransactionType,
+        note: str | None = None,
     ) -> TransactionsOrm:
         result = TransactionsOrm(
             owner_id=owner_id,
             receipt_id=receipt_id,
             total=total,
             type=type,
+            note=note,
         )
 
         self.db.add(result)

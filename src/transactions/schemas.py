@@ -1,11 +1,6 @@
 from decimal import Decimal
 
-from pydantic import (
-    UUID7,
-    BaseModel,
-    ConfigDict,
-    Field,
-)
+from pydantic import UUID7, BaseModel, ConfigDict, Field
 
 from src.transactions.enums import TransactionType
 

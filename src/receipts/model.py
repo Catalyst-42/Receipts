@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from src.items.model import ItemsOrm
     from src.retailers.model import RetailersOrm
     from src.shops.model import ShopsOrm
+    from src.transactions.model import TransactionsOrm
     from src.users.model import UsersOrm
 
 
@@ -135,5 +136,11 @@ class ReceiptsOrm(Base):
         "ItemsOrm",
         back_populates="receipt",
         cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    transaction: Mapped["TransactionsOrm"] = relationship(
+        "TransactionsOrm",
+        back_populates="receipt",
+        uselist=False,
         lazy="selectin",
     )
